@@ -2,21 +2,46 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+#[Fillable([
+    'name',
+    'email',
+    'password',
+    'role_id',
+    'is_active',
+])]
+#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = ['role_id', 'name', 'nik', 'email', 'password', 'phone', 'address', 'kecamatan_id', 'desa_id', 'photo', 'is_active'];
-    protected $hidden = ['password', 'remember_token'];
-    protected function casts(): array { return ['email_verified_at' => 'datetime', 'password' => 'hashed', 'is_active' => 'boolean']; }
-    public function role() { return $this->belongsTo(Role::class); }
-    public function kecamatan() { return $this->belongsTo(Kecamatan::class); }
-    public function desa() { return $this->belongsTo(Desa::class); }
-    public function petugas() { return $this->hasOne(Petugas::class); }
-    public function laporanSampahs() { return $this->hasMany(LaporanSampah::class, 'user_id'); }
-    
+    /**
+     * Relasi User ke Role.
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+        ];
+    }
 }

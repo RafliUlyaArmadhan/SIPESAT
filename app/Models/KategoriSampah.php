@@ -3,12 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class KategoriSampah extends Model
 {
-    use HasFactory;
+    protected $table = 'kategori_sampah';
 
-    protected $fillable = ['nama_kategori', 'deskripsi', 'icon', 'is_active'];
-    
+    protected $fillable = [
+        'nama_kategori',
+        'deskripsi',
+        'status_aktif',
+    ];
+
+    protected $casts = [
+        'status_aktif' => 'boolean',
+    ];
 }

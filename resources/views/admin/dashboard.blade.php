@@ -4,150 +4,403 @@
 
 @section('content')
 
-<!-- Leaflet CSS -->
-<link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      crossorigin=""/>
+<style>
+    /* ================================
+       DASHBOARD SIPESAT
+    ================================= */
 
-<!-- ================= STATISTIK LAPORAN ================= -->
-<div class="row g-3 mb-4">
+    .dashboard-wrapper {
+        width: 100%;
+    }
 
-    <!-- Menunggu Verifikasi -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'menunggu_verifikasi']) }}"
-           class="text-decoration-none text-dark">
+    /* ================================
+       STATISTIC CARDS
+    ================================= */
 
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e5e1;
+        border-radius: 10px;
+        min-height: 115px;
+        padding: 22px 20px;
+        box-shadow: 0 2px 8px rgba(31, 42, 36, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .stat-card .stat-title {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .stat-card .stat-number {
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 700;
+        color: #1f2a24;
+    }
+
+    /* Warna angka */
+
+    .stat-number.warning {
+        color: #e8a33d;
+    }
+
+    .stat-number.info {
+        color: #2e7da3;
+    }
+
+    .stat-number.green {
+        color: #1f6e43;
+    }
+
+    /* Icon */
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.warning {
+        background: #fff3cd;
+        color: #e8a33d;
+    }
+
+    .stat-icon.info {
+        background: #e8f3fa;
+        color: #2e7da3;
+    }
+
+    .stat-icon.green {
+        background: #e8f3ec;
+        color: #1f6e43;
+    }
+
+    .stat-icon.red {
+        background: #fdecec;
+        color: #c1443c;
+    }
+
+    .stat-number.red {
+        color: #c1443c;
+    }
+
+
+    /* ================================
+       CONTENT CARD
+    ================================= */
+
+    .dashboard-card {
+        background: #ffffff;
+        border: 1px solid #e2e5e1;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(31, 42, 36, 0.06);
+        overflow: hidden;
+    }
+
+    .dashboard-card-header {
+        padding: 15px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+    }
+
+    .dashboard-card-header h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2a24;
+    }
+
+    .dashboard-card-header i {
+        margin-right: 8px;
+        color: #1f6e43;
+    }
+
+
+    /* ================================
+       CHART
+    ================================= */
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 315px;
+        padding: 18px;
+    }
+
+
+    /* ================================
+       SUMMARY BOX
+    ================================= */
+
+    .summary-box {
+        min-height: 315px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+    }
+
+    .summary-box.green {
+        background: #1f6e43;
+    }
+
+    .summary-box.blue {
+        background: #2e7da3;
+    }
+
+    .summary-icon {
+        font-size: 43px;
+        margin-bottom: 15px;
+        opacity: 0.9;
+    }
+
+    .summary-number {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+
+    .summary-title {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+
+    /* ================================
+       MAP
+    ================================= */
+
+    .map-card {
+        margin-top: 18px;
+    }
+
+    .map-header {
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .map-title {
+        display: flex;
+        align-items: center;
+    }
+
+    .map-title i {
+        color: #c1443c;
+        margin-right: 8px;
+    }
+
+    .map-title h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .map-legend {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 12px;
+        color: #374151;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .legend-red {
+        background: #c1443c;
+    }
+
+    .legend-yellow {
+        background: #e8a33d;
+    }
+
+    .legend-green {
+        background: #1f6e43;
+    }
+
+    #dashboard-map {
+        width: 100%;
+        height: 440px;
+        z-index: 1;
+    }
+
+
+    /* ================================
+       RESPONSIVE
+    ================================= */
+
+    @media (max-width: 991px) {
+
+        .stat-card {
+            min-height: 100px;
+        }
+
+        .summary-box {
+            min-height: 220px;
+        }
+
+        #dashboard-map {
+            height: 380px;
+        }
+    }
+
+    @media (max-width: 576px) {
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-card .stat-number {
+            font-size: 24px;
+        }
+
+        .chart-container {
+            height: 280px;
+        }
+
+        #dashboard-map {
+            height: 320px;
+        }
+
+        .map-legend {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    }
+</style>
+
+
+<div class="dashboard-wrapper">
+
+    {{-- =====================================================
+         1. EMPAT KARTU STATUS LAPORAN
+    ====================================================== --}}
+
+    <div class="row g-3 mb-3">
+
+        {{-- BELUM DIATASI --}}
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
 
                 <div>
-                    <span class="text-muted small d-block">
-                        Menunggu Verifikasi
-                    </span>
+                    <div class="stat-title">
+                        Belum Diatasi
+                    </div>
 
-                    <h3 class="font-mono m-0 fw-bold">
-                        {{ $menunggu }}
-                    </h3>
+                    <div class="stat-number warning">
+                        8
+                    </div>
                 </div>
 
-                <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-clock fs-5"></i>
+                <div class="stat-icon warning">
+                    <i class="fa-solid fa-clock"></i>
                 </div>
 
             </div>
-        </a>
-    </div>
+
+        </div>
 
 
-    <!-- Sedang Ditangani -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'sedang_ditangani']) }}"
-           class="text-decoration-none text-dark">
+        {{-- SEDANG DIPROSES --}}
+        <div class="col-xl-3 col-md-6">
 
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
+            <div class="stat-card">
 
                 <div>
-                    <span class="text-muted small d-block">
-                        Sedang Ditangani
-                    </span>
+                    <div class="stat-title">
+                        Sedang Diproses
+                    </div>
 
-                    <h3 class="font-mono m-0 fw-bold text-primary">
-                        {{ $diproses }}
-                    </h3>
+                    <div class="stat-number info">
+                        15
+                    </div>
                 </div>
 
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-broom fs-5"></i>
+                <div class="stat-icon info">
+                    <i class="fa-solid fa-spinner"></i>
                 </div>
 
             </div>
-        </a>
-    </div>
+
+        </div>
 
 
-    <!-- Selesai -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'selesai']) }}"
-           class="text-decoration-none text-dark">
+        {{-- SUDAH DIATASI --}}
+        <div class="col-xl-3 col-md-6">
 
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
+            <div class="stat-card">
 
                 <div>
-                    <span class="text-muted small d-block">
-                        Selesai
-                    </span>
+                    <div class="stat-title">
+                        Sudah Diatasi
+                    </div>
 
-                    <h3 class="font-mono m-0 fw-bold text-success">
-                        {{ $selesai }}
-                    </h3>
+                    <div class="stat-number green">
+                        5
+                    </div>
                 </div>
 
-                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-circle-check fs-5"></i>
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-circle-check"></i>
                 </div>
 
             </div>
-        </a>
-    </div>
+
+        </div>
 
 
-    <!-- Ditolak -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'ditolak']) }}"
-           class="text-decoration-none text-dark">
+        {{-- DITOLAK --}}
+        <div class="col-xl-3 col-md-6">
 
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
+            <div class="stat-card">
 
                 <div>
-                    <span class="text-muted small d-block">
+                    <div class="stat-title">
                         Ditolak
-                    </span>
+                    </div>
 
-                    <h3 class="font-mono m-0 fw-bold text-danger">
-                        {{ $ditolak }}
-                    </h3>
+                    <div class="stat-number red">
+                        2
+                    </div>
                 </div>
 
-                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-circle-xmark fs-5"></i>
+                <div class="stat-icon red">
+                    <i class="fa-solid fa-circle-xmark"></i>
                 </div>
-
-            </div>
-        </a>
-    </div>
-
-</div>
-
-
-<!-- ================= CHART & STATISTIK TAMBAHAN ================= -->
-<div class="row g-4 mb-4">
-
-    <!-- Chart Kategori Sampah -->
-    <div class="col-lg-5">
-
-        <div class="card border-0 shadow-sm h-100">
-
-            <div class="card-header bg-white border-0 pt-4 pb-0">
-
-                <h6 class="fw-bold m-0">
-                    <i class="fa-solid fa-chart-column me-2 text-primary"></i>
-                    Statistik Kategori Sampah
-                </h6>
-
-            </div>
-
-            <div class="card-body">
-
-                <canvas id="kategoriChart"
-                        style="min-height:250px;">
-                </canvas>
 
             </div>
 
@@ -156,59 +409,84 @@
     </div>
 
 
-    <!-- Statistik Tambahan -->
-    <div class="col-lg-7">
+    {{-- =====================================================
+         2. GRAFIK + TOTAL LAPORAN + PETUGAS
+    ====================================================== --}}
 
-        <div class="row g-3">
+    <div class="row g-3">
 
-            <!-- Total Laporan -->
-            <div class="col-sm-6">
+        {{-- GRAFIK --}}
+        <div class="col-xl-6">
 
-                <a href="{{ route('admin.laporan.index') }}"
-                   class="text-decoration-none">
+            <div class="dashboard-card h-100">
 
-                    <div class="card border-0 shadow-sm text-center p-4 h-100 bg-primary text-white"
-                         style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); cursor:pointer;">
+                <div class="dashboard-card-header">
 
-                        <i class="fa-solid fa-file-lines fs-1 mb-3 opacity-75"></i>
+                    <h5>
+                        <i class="fa-solid fa-chart-column"></i>
+                        Statistik Kategori Sampah
+                    </h5>
 
-                        <h2 class="font-mono fw-bold mb-1">
-                            {{ $totalLaporan }}
-                        </h2>
+                </div>
 
-                        <p class="mb-0">
+                <div class="chart-container">
+
+                    <canvas id="kategoriSampahChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- KARTU KANAN --}}
+        <div class="col-xl-6">
+
+            <div class="row g-3 h-100">
+
+                {{-- TOTAL LAPORAN --}}
+                <div class="col-md-6">
+
+                    <div class="summary-box green">
+
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+
+                        <div class="summary-number">
+                            35
+                        </div>
+
+                        <div class="summary-title">
                             Total Laporan Masuk
-                        </p>
+                        </div>
 
                     </div>
 
-                </a>
-
-            </div>
+                </div>
 
 
-            <!-- Petugas Aktif -->
-            <div class="col-sm-6">
+                {{-- PETUGAS AKTIF --}}
+                <div class="col-md-6">
 
-                <a href="{{ route('admin.petugas.index') }}"
-                   class="text-decoration-none">
+                    <div class="summary-box blue">
 
-                    <div class="card border-0 shadow-sm text-center p-4 h-100 bg-info text-white"
-                         style="background: linear-gradient(135deg, var(--color-info) 0%, #1e5a77 100%); cursor:pointer;">
+                        <div class="summary-icon">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
 
-                        <i class="fa-solid fa-users-gear fs-1 mb-3 opacity-75"></i>
+                        <div class="summary-number">
+                            3
+                        </div>
 
-                        <h2 class="font-mono fw-bold mb-1">
-                            {{ $totalPetugas }}
-                        </h2>
-
-                        <p class="mb-0">
+                        <div class="summary-title">
                             Petugas Aktif
-                        </p>
+                        </div>
 
                     </div>
 
-                </a>
+                </div>
 
             </div>
 
@@ -216,338 +494,422 @@
 
     </div>
 
-</div>
+
+    {{-- =====================================================
+         3. PETA SEBARAN LAPORAN
+    ====================================================== --}}
+
+    <div class="dashboard-card map-card">
+
+        <div class="map-header">
+
+            <div class="map-title">
+
+                <i class="fa-solid fa-location-dot"></i>
+
+                <h5>
+                    Peta Sebaran Laporan
+                </h5>
+
+            </div>
 
 
-<!-- ================= PETA ================= -->
-<div class="card border-0 shadow-sm mb-4">
+            {{-- LEGEND --}}
+            <div class="map-legend">
 
-    <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                <div class="legend-item">
+                    <span class="legend-dot legend-red"></span>
+                    <span>Belum Diatasi</span>
+                </div>
 
-        <h6 class="fw-bold m-0">
+                <div class="legend-item">
+                    <span class="legend-dot legend-yellow"></span>
+                    <span>Sedang Diproses</span>
+                </div>
 
-            <i class="fa-solid fa-map-location-dot me-2 text-primary"></i>
+                <div class="legend-item">
+                    <span class="legend-dot legend-green"></span>
+                    <span>Sudah Diatasi</span>
+                </div>
 
-            Peta Sebaran Laporan (Live Map)
-
-        </h6>
-
-        <div class="small">
-
-            <span class="badge bg-danger me-1">
-                Belum Diatasi
-            </span>
-
-            <span class="badge bg-warning text-dark me-1">
-                Masih Diproses
-            </span>
-
-            <span class="badge bg-success">
-                Sudah Diatasi
-            </span>
+            </div>
 
         </div>
 
-    </div>
 
-
-    <div class="card-body p-0">
-
-        <div id="adminMap"
-             style="height:500px;
-                    width:100%;
-                    border-bottom-left-radius:var(--radius-md);
-                    border-bottom-right-radius:var(--radius-md);">
-        </div>
+        {{-- MAP --}}
+        <div id="dashboard-map"></div>
 
     </div>
 
 </div>
 
 
-<!-- ================= CHART.JS ================= -->
+{{-- =========================================================
+     CHART.JS
+========================================================= --}}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- ================= LEAFLET ================= -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        crossorigin="">
+
+{{-- =========================================================
+     LEAFLET
+========================================================= --}}
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 </script>
 
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', function () {
 
 
-    /* ================= CHART ================= */
+    /* =====================================================
+       GRAFIK KATEGORI SAMPAH
+    ====================================================== */
 
-    const ctx = document
-        .getElementById('kategoriChart')
-        .getContext('2d');
-
-    const chartLabels = {!! json_encode($chartLabels) !!};
-
-    const chartValues = {!! json_encode($chartValues) !!};
+    const chartCanvas =
+        document.getElementById('kategoriSampahChart');
 
 
-    new Chart(ctx, {
+    if (chartCanvas) {
 
-        type: 'bar',
+        new Chart(chartCanvas, {
 
-        data: {
+            type: 'bar',
 
-            labels: chartLabels.length > 0
-                ? chartLabels
-                : ['Belum ada data'],
+            data: {
 
-            datasets: [{
+                labels: [
+                    'Sampah Rumah Tangga',
+                    'Sampah Liar/Pembuangan Ilegal',
+                    'Sampah Sungai/Saluran Air'
+                ],
 
-                label: 'Jumlah Laporan',
+                datasets: [
 
-                data: chartValues.length > 0
-                    ? chartValues
-                    : [0],
+                    {
+                        label: 'Jumlah Laporan',
 
-                backgroundColor:
-                    'rgba(31, 110, 67, 0.7)',
+                        data: [
+                            13,
+                            16,
+                            4
+                        ],
 
-                borderColor:
-                    'rgba(31, 110, 67, 1)',
+                        backgroundColor:
+                            'rgba(91, 155, 118, 0.85)',
 
-                borderWidth: 1,
+                        borderColor:
+                            'rgba(91, 155, 118, 1)',
 
-                borderRadius: 4
+                        borderWidth: 1,
 
-            }]
+                        borderRadius: 4,
 
-        },
+                        barPercentage: 0.55,
 
+                        categoryPercentage: 0.7
+                    }
 
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: false,
-
-            plugins: {
-
-                legend: {
-                    display: false
-                }
+                ]
 
             },
 
-            scales: {
+            options: {
 
-                y: {
+                responsive: true,
 
-                    beginAtZero: true,
+                maintainAspectRatio: false,
 
-                    ticks: {
-                        stepSize: 1
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 18,
+
+                        ticks: {
+
+                            stepSize: 2,
+
+                            color: '#6b7280',
+
+                            font: {
+                                size: 11
+                            }
+
+                        },
+
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+
+                    },
+
+                    x: {
+
+                        ticks: {
+
+                            color: '#6b7280',
+
+                            font: {
+                                size: 10
+                            },
+
+                            maxRotation: 0,
+
+                            minRotation: 0
+                        },
+
+                        grid: {
+                            display: false
+                        }
+
                     }
 
                 }
 
             }
 
-        }
+        });
 
-    });
-
-
-
-    /* ================= LEAFLET MAP ================= */
-
-    const laporans =
-        {!! json_encode($laporansMap) !!};
+    }
 
 
-    // Posisi awal Magetan
-    const map = L.map('adminMap')
-        .setView([-7.6531, 111.3284], 12);
+    /* =====================================================
+       LEAFLET MAP
+    ====================================================== */
+
+    const mapElement =
+        document.getElementById('dashboard-map');
 
 
-    L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
+    if (mapElement) {
 
-            maxZoom: 19,
+        /*
+         * Titik tengah Kabupaten Magetan
+         */
 
-            attribution:
-                '© OpenStreetMap'
-
-        }
-
-    ).addTo(map);
-
-
-    const markersGroup =
-        L.featureGroup().addTo(map);
+        const map = L.map('dashboard-map')
+            .setView(
+                [-7.6431, 111.3591],
+                11
+            );
 
 
-    let hasMarkers = false;
+        /*
+         * OpenStreetMap
+         */
+
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+
+                attribution:
+                    '&copy; OpenStreetMap contributors'
+            }
+        ).addTo(map);
 
 
-    /* Warna marker berdasarkan status */
+        /* =================================================
+           FUNGSI MEMBUAT MARKER
+        ================================================= */
 
-    const colorMap = {
-
-        'menunggu_verifikasi':
-            '#dc3545',
-
-        'diverifikasi':
-            '#ffc107',
-
-        'sedang_ditangani':
-            '#ffc107',
-
-        'menunggu_validasi_akhir':
-            '#198754',
-
-        'selesai':
-            '#198754',
-
-        'ditolak':
-            '#dc3545'
-
-    };
-
-
-    laporans.forEach(laporan => {
-
-        if (
-            laporan.latitude &&
-            laporan.longitude
+        function createMarker(
+            lat,
+            lng,
+            color,
+            title,
+            status
         ) {
 
-            hasMarkers = true;
+            const marker = L.circleMarker(
+                [lat, lng],
+                {
+                    radius: 7,
+
+                    fillColor: color,
+
+                    color: '#ffffff',
+
+                    weight: 2,
+
+                    opacity: 1,
+
+                    fillOpacity: 1
+                }
+            ).addTo(map);
 
 
-            const markerColor =
-                colorMap[laporan.status] ||
-                '#1F2A24';
+            marker.bindPopup(`
 
+                <div style="
+                    min-width:190px;
+                    font-family:Arial,sans-serif;
+                ">
 
-            const customIcon =
-                L.divIcon({
+                    <strong style="
+                        font-size:15px;
+                    ">
+                        ${title}
+                    </strong>
 
-                    className:
-                        'custom-div-icon',
+                    <br><br>
 
-                    html:
-                        `<div style="
-                            background-color:${markerColor};
-                            width:20px;
-                            height:20px;
-                            border-radius:50%;
-                            border:2px solid white;
-                            box-shadow:0 0 5px rgba(0,0,0,0.5);
-                        "></div>`,
+                    <span style="
+                        font-size:13px;
+                        color:#555;
+                    ">
+                        Status:
+                    </span>
 
-                    iconSize: [20, 20],
-
-                    iconAnchor: [10, 10]
-
-                });
-
-
-            const detailUrl =
-                `/admin/laporan/${laporan.id}`;
-
-
-            const namaKategori =
-                laporan.kategori_sampah
-                    ? laporan.kategori_sampah.nama_kategori
-                    : '-';
-
-
-            const pelapor =
-                laporan.user
-                    ? laporan.user.name
-                    : 'Anonim';
-
-
-            const formattedStatus =
-                laporan.status
-                    .replace(/_/g, ' ')
-                    .replace(/\b\w/g,
-                        l => l.toUpperCase());
-
-
-            const popupHtml = `
-
-                <div style="min-width:200px;">
-
-                    <div class="mb-1 d-flex justify-content-between align-items-start">
-
-                        <h6 class="fw-bold m-0 pe-2">
-                            ${laporan.judul_laporan}
-                        </h6>
-
-                        <span class="badge"
-                              style="background-color:${markerColor};
-                                     font-size:0.65rem;">
-                            ${formattedStatus}
-                        </span>
-
-                    </div>
-
-
-                    <small class="text-muted d-block mb-2">
-                        ${laporan.kode_laporan}
-                    </small>
-
-
-                    <p class="mb-1 small">
-                        <b>Pelapor:</b>
-                        ${pelapor}
-                    </p>
-
-
-                    <p class="mb-2 small">
-                        <b>Kategori:</b>
-                        ${namaKategori}
-                    </p>
-
-
-                    <a href="${detailUrl}"
-                       class="btn btn-sm btn-outline-primary w-100 rounded-pill mt-1">
-                        Lihat Detail
-                    </a>
+                    <strong style="
+                        font-size:13px;
+                    ">
+                        ${status}
+                    </strong>
 
                 </div>
 
-            `;
+            `);
 
 
-            L.marker(
-                [
-                    laporan.latitude,
-                    laporan.longitude
-                ],
-                {
-                    icon: customIcon
-                }
-            )
-
-            .bindPopup(popupHtml)
-
-            .addTo(markersGroup);
-
+            return marker;
         }
 
-    });
+
+        /* =================================================
+           DATA MARKER SEMENTARA
+           
+           Nanti akan diganti dengan data
+           laporan dari database.
+        ================================================= */
 
 
-    if (hasMarkers) {
+        /* MERAH = BELUM DIATASI */
 
-        map.fitBounds(
-            markersGroup.getBounds(),
-            {
-                padding: [30, 30]
-            }
+        createMarker(
+            -7.630,
+            111.350,
+            '#c1443c',
+            'Laporan Sampah #001',
+            'Belum Diatasi'
         );
+
+        createMarker(
+            -7.650,
+            111.375,
+            '#c1443c',
+            'Laporan Sampah #002',
+            'Belum Diatasi'
+        );
+
+        createMarker(
+            -7.670,
+            111.340,
+            '#c1443c',
+            'Laporan Sampah #003',
+            'Belum Diatasi'
+        );
+
+
+        /* KUNING = SEDANG DIPROSES */
+
+        createMarker(
+            -7.620,
+            111.365,
+            '#e8a33d',
+            'Laporan Sampah #004',
+            'Sedang Diproses'
+        );
+
+        createMarker(
+            -7.645,
+            111.345,
+            '#e8a33d',
+            'Laporan Sampah #005',
+            'Sedang Diproses'
+        );
+
+        createMarker(
+            -7.660,
+            111.390,
+            '#e8a33d',
+            'Laporan Sampah #006',
+            'Sedang Diproses'
+        );
+
+        createMarker(
+            -7.685,
+            111.360,
+            '#e8a33d',
+            'Laporan Sampah #007',
+            'Sedang Diproses'
+        );
+
+
+        /* HIJAU = SUDAH DIATASI */
+
+        createMarker(
+            -7.610,
+            111.345,
+            '#1f6e43',
+            'Laporan Sampah #008',
+            'Sudah Diatasi'
+        );
+
+        createMarker(
+            -7.635,
+            111.380,
+            '#1f6e43',
+            'Laporan Sampah #009',
+            'Sudah Diatasi'
+        );
+
+        createMarker(
+            -7.655,
+            111.360,
+            '#1f6e43',
+            'Laporan Sampah #010',
+            'Sudah Diatasi'
+        );
+
+        createMarker(
+            -7.675,
+            111.375,
+            '#1f6e43',
+            'Laporan Sampah #011',
+            'Sudah Diatasi'
+        );
+
+
+        /*
+         * Refresh ukuran map
+         */
+
+        setTimeout(function () {
+
+            map.invalidateSize();
+
+        }, 300);
 
     }
 

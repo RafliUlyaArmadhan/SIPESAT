@@ -1,448 +1,2152 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
 
-@section('content')
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<!-- Leaflet Geocoder CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<head>
 
-<style>
-    .upload-drop-zone {
-        border: 2px dashed var(--color-border, #E2E5E1);
-        border-radius: 12px;
-        padding: 30px;
-        text-align: center;
-        background-color: var(--color-bg, #F6F7F5);
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-    }
-    .upload-drop-zone.dragover {
-        border-color: var(--color-primary, #1F6E43);
-        background-color: var(--color-primary-light, #E8F3EC);
-    }
-    .upload-drop-zone i {
-        font-size: 3rem;
-        color: var(--color-muted, #6B7280);
-        margin-bottom: 10px;
-        transition: color 0.3s ease;
-    }
-    .upload-drop-zone.dragover i {
-        color: var(--color-primary, #1F6E43);
-    }
-    .upload-drop-zone input[type="file"] {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        cursor: pointer;
-    }
-    #image-preview {
-        display: none;
-        margin-top: 15px;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid var(--color-border, #E2E5E1);
-    }
-    #image-preview img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-    .remove-image {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(255, 0, 0, 0.7);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 10;
-    }
-</style>
+    {{-- Menentukan karakter yang digunakan oleh halaman --}}
+    <meta charset="UTF-8">
 
-<div class="container my-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Buat Laporan Sampah Baru</h4>
+    {{-- Membuat tampilan website menyesuaikan ukuran layar perangkat --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {{-- Judul yang tampil pada tab browser --}}
+    <title>Buat Laporan Sampah - SIPESAT</title>
+
+
+    {{-- =========================================================
+         BOOTSTRAP
+    ========================================================= --}}
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    {{-- =========================================================
+         FONT AWESOME
+    ========================================================= --}}
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    {{-- =========================================================
+         LEAFLET CSS
+    ========================================================= --}}
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <style>
+
+        /* =====================================================
+           GLOBAL STYLE
+        ===================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        /* =====================================================
+           BODY
+        ===================================================== */
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f6f8;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+        }
+
+
+        /* =====================================================
+           NAVBAR
+        ===================================================== */
+
+        .navbar-sipesat {
+
+            background: white;
+
+            color: #333;
+
+            padding: 10px max(20px, calc((100% - 1100px) / 2));
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+
+        /* Mengatur bagian logo SIPESAT */
+        .brand-sipesat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+
+        /* Mengatur icon logo */
+        .brand-logo {
+            width: auto;
+            height: auto;
+
+            background: transparent;
+            color: #176b43;
+
+            border-radius: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+        }
+
+
+        /* Bagian teks SIPESAT */
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        /* Tulisan SIPESAT */
+        .brand-text strong {
+            font-size: 16px;
+            letter-spacing: 0;
+            color: #176b43;
+        }
+
+
+        /* Tulisan kecil pada navbar disembunyikan */
+        .brand-text small {
+            display: none;
+        }
+
+
+        /* Area nama user dan tombol keluar */
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #333;
+        }
+
+
+        /* Tombol logout */
+        .logout-btn {
+            color: #dc3545;
+            text-decoration: none;
+            border: 1px solid #dc3545;
+            padding: 5px 9px;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+
+        /* Efek ketika mouse diarahkan ke tombol logout */
+        .logout-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+
+        /* =====================================================
+           WRAPPER
+        ===================================================== */
+
+        .laporan-wrapper {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+
+        /* Kotak utama laporan */
+        .laporan-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        }
+
+
+        /* =====================================================
+           HEADER LAPORAN
+           
+           Dibuat lebih pendek dan sederhana.
+        ===================================================== */
+
+        .laporan-header {
+            background: #176b43;
+            color: white;
+
+            /* Header dibuat lebih pendek */
+            padding: 8px 16px;
+        }
+
+
+        /* Judul laporan */
+        .laporan-header h2 {
+            margin: 0;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            line-height: 1.4;
+        }
+
+
+        /* Deskripsi header disembunyikan */
+        .laporan-header p {
+            display: none;
+        }
+
+
+        /* =====================================================
+           FORM
+        ===================================================== */
+
+        .laporan-body {
+            padding: 30px;
+        }
+
+
+        /* Label setiap input */
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+
+        /* Input dan dropdown */
+        .form-control,
+        .form-select {
+            min-height: 45px;
+            border-radius: 7px;
+            border: 1px solid #d7d7d7;
+        }
+
+
+        /* Efek ketika input sedang dipilih */
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #176b43;
+            box-shadow: 0 0 0 0.2rem rgba(23, 107, 67, 0.12);
+        }
+
+
+        /* Tinggi textarea */
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+
+        /* =====================================================
+           MAP
+        ===================================================== */
+
+        .map-container {
+            margin-top: 10px;
+        }
+
+
+        /* Container pencarian lokasi */
+        .map-search {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+
+        /* Input pencarian */
+        .map-search input {
+            flex: 1;
+            min-height: 42px;
+        }
+
+
+        /* Tombol pencarian */
+        .search-btn {
+            background: #176b43;
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+
+        /* Efek hover tombol pencarian */
+        .search-btn:hover {
+            background: #125636;
+        }
+
+
+        /* Tombol disabled */
+        .search-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+
+        /* Ukuran peta */
+        #map {
+            width: 100%;
+            height: 280px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+        }
+
+
+        /* Tombol menggunakan lokasi GPS */
+        .location-btn {
+            margin-top: 12px;
+            background: #176b43;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+
+        /* Efek hover */
+        .location-btn:hover {
+            background: #125636;
+        }
+
+
+        /* Ketika tombol sedang diproses */
+        .location-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+
+        /* Kotak koordinat */
+        .coordinate-box {
+            background: #f8f9fa;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+
+        /* =====================================================
+           UPLOAD FOTO
+        ===================================================== */
+
+        .upload-area {
+            border: 2px dashed #cfcfcf;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            background: #fafafa;
+            transition: 0.2s;
+        }
+
+
+        /* Efek ketika mouse diarahkan */
+        .upload-area:hover {
+            border-color: #176b43;
+            background: #f5fbf8;
+        }
+
+
+        /* Icon upload */
+        .upload-icon {
+            font-size: 32px;
+            color: #176b43;
+            margin-bottom: 10px;
+        }
+
+
+        /* Informasi format */
+        .upload-info {
+            font-size: 13px;
+            color: #777;
+            margin-top: 8px;
+        }
+
+
+        /* Preview disembunyikan sebelum foto dipilih */
+        #preview-container {
+            margin-top: 15px;
+            display: none;
+        }
+
+
+        /* Ukuran preview foto */
+        #preview-image {
+            max-width: 250px;
+            max-height: 180px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            object-fit: cover;
+        }
+
+
+        /* =====================================================
+           BUTTON
+        ===================================================== */
+
+        .button-area {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+        }
+
+
+        /* Tombol batal */
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+        }
+
+
+        .btn-cancel:hover {
+            background: #5c636a;
+            color: white;
+        }
+
+
+        /* Tombol kirim laporan */
+        .btn-submit {
+            background: #176b43;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 7px;
+        }
+
+
+        .btn-submit:hover {
+            background: #125636;
+        }
+
+
+        /* =====================================================
+           ERROR
+        ===================================================== */
+
+        .alert-danger {
+            border-radius: 8px;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 768px) {
+
+            .navbar-sipesat {
+                padding: 12px 18px;
+            }
+
+
+            .user-area {
+                font-size: 12px;
+                gap: 6px;
+            }
+
+
+            .brand-text small {
+                display: none;
+            }
+
+
+            .laporan-wrapper {
+                margin: 20px auto;
+                padding: 0 12px;
+            }
+
+
+            .laporan-body {
+                padding: 20px;
+            }
+
+
+            .laporan-header {
+                padding: 8px 16px;
+            }
+
+
+            .laporan-header h2 {
+                font-size: 16px;
+            }
+
+
+            .map-search {
+                flex-direction: column;
+            }
+
+
+            .search-btn {
+                width: 100%;
+            }
+
+
+            .button-area {
+                flex-direction: column;
+            }
+
+
+            .btn-cancel,
+            .btn-submit {
+                width: 100%;
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    {{-- =========================================================
+         NAVBAR
+    ========================================================= --}}
+
+    <nav class="navbar-sipesat">
+
+        {{-- Logo dan nama aplikasi --}}
+        <div class="brand-sipesat">
+
+            <div class="brand-logo">
+
+                <i class="fa-solid fa-leaf"></i>
+
+            </div>
+
+
+            <div class="brand-text">
+
+                <strong>SIPESAT</strong>
+
+            </div>
+
         </div>
-        <div class="card-body">
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
-            <form action="{{ route('masyarakat.laporan.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="judul_laporan" class="form-label">Judul Laporan</label>
-                        <input type="text" class="form-control" id="judul_laporan" name="judul_laporan" value="{{ old('judul_laporan') }}" required>
-                    </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="kategori_sampah_id" class="form-label">Kategori Sampah</label>
-                        <select class="form-select" id="kategori_sampah_id" name="kategori_sampah_id" required>
-                            <option value="">Pilih Kategori</option>
-                            @foreach($kategoris as $kategori)
-                                <option value="{{ $kategori->id }}" {{ old('kategori_sampah_id') == $kategori->id ? 'selected' : '' }}>{{ $kategori->nama_kategori }}</option>
+        {{-- Area informasi user --}}
+        <div class="user-area">
+
+            <span>
+                Halo, {{ auth()->user()->name }}
+            </span>
+
+
+            {{-- Tombol logout --}}
+            <a
+                href="{{ route('logout') }}"
+                class="logout-btn"
+            >
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Keluar
+
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    {{-- =========================================================
+         CONTENT
+    ========================================================= --}}
+
+    <div class="laporan-wrapper">
+
+        <div class="laporan-card">
+
+
+            {{-- =================================================
+                 HEADER LAPORAN
+            ================================================= --}}
+
+            <div class="laporan-header">
+
+                <h2>
+
+
+                    Buat Laporan Sampah Baru
+
+                </h2>
+
+            </div>
+
+
+
+            {{-- =================================================
+                 BODY
+            ================================================= --}}
+
+            <div class="laporan-body">
+
+
+                {{-- =================================================
+                     ERROR VALIDASI
+                ================================================= --}}
+
+                @if ($errors->any())
+
+                    <div class="alert alert-danger">
+
+                        <strong>
+
+                            <i class="fa-solid fa-circle-exclamation"></i>
+
+                            Terdapat kesalahan:
+
+                        </strong>
+
+
+                        <ul class="mb-0 mt-2">
+
+                            @foreach ($errors->all() as $error)
+
+                                <li>
+                                    {{ $error }}
+                                </li>
+
                             @endforeach
-                        </select>
+
+                        </ul>
+
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="kecamatan_id" class="form-label">Kecamatan</label>
-                        <select class="form-select" id="kecamatan_id" name="kecamatan_id" required>
-                            <option value="">Pilih Kecamatan</option>
-                            @foreach($kecamatans as $kecamatan)
-                                <option value="{{ $kecamatan->id }}" {{ old('kecamatan_id') == $kecamatan->id ? 'selected' : '' }}>{{ $kecamatan->nama_kecamatan }}</option>
-                            @endforeach
-                        </select>
+                @endif
+
+
+
+                {{-- =================================================
+                     FORM LAPORAN
+                ================================================= --}}
+
+                <form
+                    action="{{ route('masyarakat.laporan.store') }}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                >
+
+                    {{-- Token keamanan Laravel --}}
+                    @csrf
+
+
+
+                    {{-- =================================================
+                         JUDUL + KATEGORI
+                    ================================================= --}}
+
+                    <div class="row g-3">
+
+
+                        {{-- INPUT JUDUL --}}
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+                                Judul Laporan
+                            </label>
+
+
+                            <input
+                                type="text"
+                                name="judul_laporan"
+                                class="form-control"
+                                placeholder="Contoh: Tumpukan sampah di pinggir jalan"
+                                value="{{ old('judul_laporan') }}"
+                                required
+                            >
+
+                        </div>
+
+
+
+                        {{-- DROPDOWN KATEGORI --}}
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+                                Kategori Sampah
+                            </label>
+
+
+                            <select
+                                name="kategori_sampah_id"
+                                class="form-select"
+                                required
+                            >
+
+                                <option value="">
+                                    Pilih Kategori Sampah
+                                </option>
+
+
+                                @foreach ($kategoriSampah as $kategori)
+
+                                    <option
+                                        value="{{ $kategori->id }}"
+                                        {{ old('kategori_sampah_id') == $kategori->id ? 'selected' : '' }}
+                                    >
+
+                                        {{ $kategori->nama_kategori }}
+
+                                    </option>
+
+                                @endforeach
+
+                            </select>
+
+                        </div>
+
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="desa_id" class="form-label">Desa / Kelurahan</label>
-                        <select class="form-select" id="desa_id" name="desa_id" required disabled>
-                            <option value="">Pilih Desa / Kelurahan</option>
-                        </select>
+
+
+                    {{-- =================================================
+                         KECAMATAN + DESA
+                    ================================================= --}}
+
+                    <div class="row g-3 mt-1">
+
+
+                        {{-- DROPDOWN KECAMATAN --}}
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+                                Kecamatan
+                            </label>
+
+
+                            <select
+                                name="kecamatan"
+                                id="kecamatan"
+                                class="form-select"
+                                required
+                            >
+
+                                <option value="">
+                                    Pilih Kecamatan
+                                </option>
+
+
+                                <option value="MAGETAN">MAGETAN</option>
+                                <option value="LEMBEYAN">LEMBEYAN</option>
+                                <option value="PLAOSAN">PLAOSAN</option>
+                                <option value="PANEKAN">PANEKAN</option>
+                                <option value="KAWEDANAN">KAWEDANAN</option>
+                                <option value="PARANG">PARANG</option>
+                                <option value="MAOSPATI">MAOSPATI</option>
+                                <option value="BARAT">BARAT</option>
+                                <option value="KARANGREJO">KARANGREJO</option>
+                                <option value="NGUNTORONADI">NGUNTORONADI</option>
+                                <option value="SIDOREJO">SIDOREJO</option>
+                                <option value="KARAS">KARAS</option>
+                                <option value="BENDO">BENDO</option>
+                                <option value="TAKERAN">TAKERAN</option>
+                                <option value="NGARIBOYO">NGARIBOYO</option>
+                                <option value="KARANGMOJO">KARANGMOJO</option>
+                                <option value="SUKOMORO">SUKOMORO</option>
+                                <option value="KARANGANYAR">KARANGANYAR</option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        {{-- DROPDOWN DESA --}}
+                        <div class="col-md-6">
+
+                            <label class="form-label">
+                                Desa/Kelurahan
+                            </label>
+
+
+                            <select
+                                name="desa"
+                                id="desa"
+                                class="form-select"
+                                required
+                                disabled
+                            >
+
+                                <option value="">
+                                    Pilih Kecamatan terlebih dahulu
+                                </option>
+
+                            </select>
+
+                        </div>
+
                     </div>
 
-                    <div class="col-md-12 mb-3">
-                        <label for="deskripsi" class="form-label">Deskripsi Laporan</label>
-                        <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3" required>{{ old('deskripsi') }}</textarea>
+
+
+                    {{-- =================================================
+                         DESKRIPSI
+                    ================================================= --}}
+
+                    <div class="mt-4">
+
+                        <label class="form-label">
+                            Deskripsi Laporan
+                        </label>
+
+
+                        <textarea
+                            name="deskripsi"
+                            class="form-control"
+                            placeholder="Jelaskan kondisi sampah yang ditemukan..."
+                            required
+                        >{{ old('deskripsi') }}</textarea>
+
                     </div>
 
-                    <div class="col-md-12 mb-3">
-                        <label for="alamat_lengkap" class="form-label">Alamat Lengkap</label>
-                        <textarea class="form-control" id="alamat_lengkap" name="alamat_lengkap" rows="2" required>{{ old('alamat_lengkap') }}</textarea>
+
+
+                    {{-- =================================================
+                         ALAMAT LENGKAP
+                    ================================================= --}}
+
+                    <div class="mt-4">
+
+                        <label class="form-label">
+                            Alamat Lengkap
+                        </label>
+
+
+                        <textarea
+                            name="alamat_lengkap"
+                            class="form-control"
+                            placeholder="Masukkan alamat lengkap lokasi sampah..."
+                            required
+                        >{{ old('alamat_lengkap') }}</textarea>
+
                     </div>
-                    
-                    <div class="col-md-12 mb-3">
-                    <div class="col-md-12 mb-3">
-                        <div class="d-flex justify-content-between align-items-end mb-2">
-                            <label class="form-label mb-0">Tentukan Titik Lokasi di Peta</label>
-                            <button type="button" class="btn btn-sm btn-outline-success" id="btn-current-location">
-                                <i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini
+
+
+
+                    {{-- =================================================
+                         MAP
+                    ================================================= --}}
+
+                    <div class="mt-4">
+
+                        <label class="form-label">
+                            Lokasi Sampah
+                        </label>
+
+
+                        <div class="map-container">
+
+
+                            {{-- PENCARIAN LOKASI --}}
+
+                            <div class="map-search">
+
+                                <input
+                                    type="text"
+                                    id="search-location"
+                                    class="form-control"
+                                    placeholder="Cari lokasi di Kabupaten Magetan..."
+                                >
+
+
+                                <button
+                                    type="button"
+                                    id="btn-search-location"
+                                    class="search-btn"
+                                >
+
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                                    Cari
+
+                                </button>
+
+                            </div>
+
+
+
+                            {{-- PETA LEAFLET --}}
+
+                            <div id="map"></div>
+
+
+
+                            {{-- LOKASI SAAT INI --}}
+
+                            <button
+                                type="button"
+                                class="location-btn"
+                                id="btn-location"
+                            >
+
+                                <i class="fa-solid fa-location-crosshairs"></i>
+
+                                Gunakan Lokasi Saat Ini
+
                             </button>
+
                         </div>
-                        <div id="map-picker" style="height: 350px; width: 100%; z-index: 1;" class="border rounded shadow-sm"></div>
-                        <p class="form-text text-muted">Geser marker, klik pada peta, gunakan fitur pencarian (kaca pembesar), atau deteksi lokasi otomatis.</p>
-                        
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label for="latitude" class="form-label">Latitude</label>
-                                <input type="text" class="form-control bg-light" id="latitude" name="latitude" value="{{ old('latitude') }}" readonly required>
+
+
+
+                        {{-- KOORDINAT --}}
+
+                        <div class="coordinate-box">
+
+                            <div class="row g-3">
+
+
+                                {{-- LATITUDE --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Latitude
+                                    </label>
+
+
+                                    <input
+                                        type="text"
+                                        name="latitude"
+                                        id="latitude"
+                                        class="form-control"
+                                        value="{{ old('latitude') }}"
+                                        placeholder="Latitude"
+                                        readonly
+                                    >
+
+                                </div>
+
+
+
+                                {{-- LONGITUDE --}}
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        Longitude
+                                    </label>
+
+
+                                    <input
+                                        type="text"
+                                        name="longitude"
+                                        id="longitude"
+                                        class="form-control"
+                                        value="{{ old('longitude') }}"
+                                        placeholder="Longitude"
+                                        readonly
+                                    >
+
+                                </div>
+
                             </div>
-                            <div class="col-md-6">
-                                <label for="longitude" class="form-label">Longitude</label>
-                                <input type="text" class="form-control bg-light" id="longitude" name="longitude" value="{{ old('longitude') }}" readonly required>
-                            </div>
+
                         </div>
+
                     </div>
 
 
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Foto Laporan (Maks. 2MB)</label>
-                        <div class="upload-drop-zone" id="drop-zone">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <h6 class="fw-bold text-dark">Seret & Lepas Foto di sini</h6>
-                            <p class="text-muted small mb-0">atau klik untuk menelusuri (PNG, JPG, JPEG)</p>
-                            <input type="file" id="foto_laporan" name="foto_laporan" accept="image/png, image/jpeg, image/jpg" required>
-                        </div>
-                        
-                        <div id="image-preview" class="position-relative">
-                            <button type="button" class="remove-image" id="remove-btn" title="Hapus Foto"><i class="fa-solid fa-xmark"></i></button>
-                            <img src="" id="preview-img" alt="Preview">
-                        </div>
-                    </div>
-                </div>
+                    {{-- =================================================
+                         FOTO LAPORAN
+                    ================================================= --}}
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary px-4 fw-bold">Kirim Laporan</button>
-                    <a href="{{ route('masyarakat.dashboard') }}" class="btn btn-outline-secondary px-4 ms-2">Batal</a>
-                </div>
-            </form>
+                    <div class="mt-4">
+
+                        <label class="form-label">
+                            Foto Laporan
+                        </label>
+
+
+                        <div class="upload-area">
+
+                            <div class="upload-icon">
+
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                            </div>
+
+
+                            <input
+                                type="file"
+                                name="foto_laporan"
+                                id="foto_laporan"
+                                class="form-control"
+                                accept=".jpg,.jpeg,.png"
+                                required
+                            >
+
+
+                            <div class="upload-info">
+
+                                Format:
+                                <strong>JPG, JPEG, PNG</strong>
+
+                                <br>
+
+                                Ukuran maksimal:
+                                <strong>2 MB</strong>
+
+                            </div>
+
+
+
+                            {{-- PREVIEW FOTO --}}
+
+                            <div id="preview-container">
+
+                                <p class="mb-2">
+                                    Preview Foto:
+                                </p>
+
+
+                                <img
+                                    id="preview-image"
+                                    src=""
+                                    alt="Preview Foto"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    {{-- =================================================
+                         TOMBOL
+                    ================================================= --}}
+
+                    <div class="button-area">
+
+
+                        {{-- Kembali ke dashboard --}}
+                        <a
+                            href="{{ route('masyarakat.dashboard') }}"
+                            class="btn-cancel"
+                        >
+
+                            <i class="fa-solid fa-arrow-left"></i>
+
+                            Batal
+
+                        </a>
+
+
+
+                        {{-- Submit form --}}
+                        <button
+                            type="submit"
+                            class="btn-submit"
+                        >
+
+                            <i class="fa-solid fa-paper-plane"></i>
+
+                            Kirim Laporan
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
         </div>
+
     </div>
-</div>
 
-<!-- Leaflet JS & Geocoder -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-<!-- jQuery & Select2 -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var latInput = document.getElementById('latitude');
-        var lngInput = document.getElementById('longitude');
-        
-        // Default center ke Magetan
-        var defaultLat = latInput.value ? parseFloat(latInput.value) : -7.6531;
-        var defaultLng = lngInput.value ? parseFloat(lngInput.value) : 111.3284;
 
-        var map = L.map('map-picker').setView([defaultLat, defaultLng], 12);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+    {{-- =========================================================
+         LEAFLET JAVASCRIPT
+    ========================================================= --}}
 
-        var marker = L.marker([defaultLat, defaultLng], {
-            draggable: true
-        }).addTo(map);
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        // Update inputs on marker drag
-        marker.on('dragend', function (e) {
-            var position = marker.getLatLng();
-            latInput.value = position.lat;
-            lngInput.value = position.lng;
-        });
 
-        // Update inputs and marker on map click
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            latInput.value = e.latlng.lat;
-            lngInput.value = e.latlng.lng;
-        });
-        
-        // If not set yet, set them to default
-        if(!latInput.value || !lngInput.value) {
-            latInput.value = defaultLat;
-            lngInput.value = defaultLng;
-        }
 
-        // Fitur 1: Pencarian Alamat (Geocoder)
-        L.Control.geocoder({
-            defaultMarkGeocode: false,
-            placeholder: 'Cari nama tempat / jalan...'
-        }).on('markgeocode', function(e) {
-            var bbox = e.geocode.bbox;
-            var poly = L.polygon([
-                bbox.getSouthEast(),
-                bbox.getNorthEast(),
-                bbox.getNorthWest(),
-                bbox.getSouthWest()
-            ]);
-            map.fitBounds(poly.getBounds());
-            
-            var latlng = e.geocode.center;
-            marker.setLatLng(latlng);
-            latInput.value = latlng.lat;
-            lngInput.value = latlng.lng;
-            
-            // Auto-fill alamat jika masih kosong
-            var alamatInput = document.getElementById('alamat_lengkap');
-            if (!alamatInput.value) {
-                alamatInput.value = e.geocode.name;
+    <script>
+
+
+        /* =====================================================
+           DATA DESA / KELURAHAN
+        ===================================================== */
+
+        const dataDesa = {
+
+            "MAGETAN": [
+                "Magetan",
+                "Selosari",
+                "Sukowinangun",
+                "Tambran",
+                "Tawang Anom"
+            ],
+
+            "LEMBEYAN": [
+                "Lembeyan",
+                "Lembeyan Kulon",
+                "Lembeyan Wetan",
+                "Kediren",
+                "Tapen"
+            ],
+
+            "PLAOSAN": [
+                "Plaosan",
+                "Puntukdoro",
+                "Sarangan",
+                "Sidomukti",
+                "Bulugunung"
+            ],
+
+            "PANEKAN": [
+                "Panekan",
+                "Bedagung",
+                "Jabung",
+                "Manjung",
+                "Milangasri"
+            ],
+
+            "KAWEDANAN": [
+                "Kawedanan",
+                "Balerejo",
+                "Karangrejo",
+                "Mojorejo",
+                "Ngadirejo"
+            ],
+
+            "PARANG": [
+                "Parang",
+                "Bungkuk",
+                "Nglopang",
+                "Pragak",
+                "Trosono"
+            ],
+
+            "MAOSPATI": [
+                "Maospati",
+                "Mranggen",
+                "Nglames",
+                "Pandeyan",
+                "Sumberejo"
+            ],
+
+            "BARAT": [
+                "Barat",
+                "Banjarejo",
+                "Karangsono",
+                "Mangunharjo",
+                "Tebon"
+            ],
+
+            "KARANGREJO": [
+                "Karangrejo",
+                "Gebyog",
+                "Manisrejo",
+                "Patihan",
+                "Sambirembe"
+            ],
+
+            "NGUNTORONADI": [
+                "Nguntoronadi",
+                "Goranggareng",
+                "Purworejo",
+                "Semen",
+                "Simokerto"
+            ],
+
+            "SIDOREJO": [
+                "Sidorejo",
+                "Campursari",
+                "Dukuh",
+                "Kalang",
+                "Sidomulyo"
+            ],
+
+            "KARAS": [
+                "Karas",
+                "Botok",
+                "Geplak",
+                "Janggan",
+                "Kuwon"
+            ],
+
+            "BENDO": [
+                "Bendo",
+                "Bulak",
+                "Carikan",
+                "Klecorejo",
+                "Pingkuk"
+            ],
+
+            "TAKERAN": [
+                "Takeran",
+                "Duyung",
+                "Kerik",
+                "Madigondo",
+                "Sawojajar"
+            ],
+
+            "NGARIBOYO": [
+                "Ngariboyo",
+                "Banjarejo",
+                "Baleasri",
+                "Mojopurno",
+                "Selopanggung"
+            ],
+
+            "KARANGMOJO": [
+                "Karangmojo",
+                "Kedungrejo",
+                "Manjung",
+                "Sumberagung",
+                "Tanjungsari"
+            ],
+
+            "SUKOMORO": [
+                "Sukomoro",
+                "Bibis",
+                "Kentangan",
+                "Kedungguwo",
+                "Pojoksari"
+            ],
+
+            "KARANGANYAR": [
+                "Karanganyar",
+                "Candi",
+                "Cileng",
+                "Mojopurno",
+                "Nguri"
+            ]
+
+        };
+
+
+
+        /* =====================================================
+           DROPDOWN KECAMATAN → DESA
+        ===================================================== */
+
+        const kecamatanSelect =
+            document.getElementById('kecamatan');
+
+
+        const desaSelect =
+            document.getElementById('desa');
+
+
+
+        function loadDesa(
+            kecamatan,
+            selectedDesa = ''
+        ) {
+
+            desaSelect.innerHTML = '';
+
+
+            const defaultOption =
+                document.createElement('option');
+
+
+            defaultOption.value = '';
+
+
+            defaultOption.textContent =
+                kecamatan
+                    ? 'Pilih Desa / Kelurahan'
+                    : 'Pilih Kecamatan terlebih dahulu';
+
+
+            desaSelect.appendChild(defaultOption);
+
+
+
+            if (
+                !kecamatan ||
+                !dataDesa[kecamatan]
+            ) {
+
+                desaSelect.disabled = true;
+
+                return;
+
             }
-        }).addTo(map);
 
-        // Fitur 2: Gunakan Lokasi Saat Ini (GPS)
-        document.getElementById('btn-current-location').addEventListener('click', function() {
-            var btn = this;
-            if (navigator.geolocation) {
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari lokasi...';
-                btn.disabled = true;
-                
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
-                    
-                    map.setView([lat, lng], 16);
-                    marker.setLatLng([lat, lng]);
-                    latInput.value = lat;
-                    lngInput.value = lng;
-                    
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Lokasi Ditemukan';
-                    btn.classList.replace('btn-outline-success', 'btn-success');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini';
-                        btn.classList.replace('btn-success', 'btn-outline-success');
-                        btn.disabled = false;
-                    }, 3000);
-                }, function(error) {
-                    alert('Gagal mendapatkan lokasi. Pastikan izin lokasi (GPS) diaktifkan di browser/HP Anda.');
-                    btn.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini';
-                    btn.disabled = false;
-                });
-            } else {
-                alert('Browser Anda tidak mendukung fitur lokasi GPS.');
-            }
-        });
-    });
-    
-    // JS for Drag and Drop Image Uploader
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('foto_laporan');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
-    const removeBtn = document.getElementById('remove-btn');
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+            desaSelect.disabled = false;
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, highlight, false);
-    });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, unhighlight, false);
-    });
 
-    function highlight(e) {
-        dropZone.classList.add('dragover');
-    }
+            dataDesa[kecamatan].forEach(
+                function (desa) {
 
-    function unhighlight(e) {
-        dropZone.classList.remove('dragover');
-    }
+                    const option =
+                        document.createElement('option');
 
-    dropZone.addEventListener('drop', handleDrop, false);
 
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
+                    option.value = desa;
 
-        if (files.length > 0) {
-            fileInput.files = files; // Assign files to input
-            handleFiles(files[0]);
-        }
-    }
-    
-    fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            handleFiles(this.files[0]);
-        }
-    });
+                    option.textContent = desa;
 
-    function handleFiles(file) {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function() {
-                previewImg.src = reader.result;
-                imagePreview.style.display = 'block';
-                dropZone.style.display = 'none';
-            }
-        } else {
-            alert('Harap unggah file berupa gambar (PNG/JPG).');
-            resetUpload();
-        }
-    }
-    
-    removeBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        resetUpload();
-    });
-    
-    function resetUpload() {
-        fileInput.value = "";
-        imagePreview.style.display = 'none';
-        previewImg.src = "";
-        dropZone.style.display = 'block';
-    }
 
-    // Logic untuk dropdown dinamis Kecamatan -> Desa menggunakan AJAX
-    const $kecamatanSelect = $('#kecamatan_id');
-    const $desaSelect = $('#desa_id');
-    const oldDesaId = "{{ old('desa_id') }}";
 
-    // Inisialisasi Select2
-    $kecamatanSelect.select2({
-        theme: 'bootstrap-5',
-        placeholder: 'Cari & Pilih Kecamatan...'
-    });
-    
-    $desaSelect.select2({
-        theme: 'bootstrap-5',
-        placeholder: 'Cari & Pilih Desa / Kelurahan...'
-    });
+                    if (
+                        desa === selectedDesa
+                    ) {
 
-    // KUNCI KERAS: Jangan izinkan dropdown ditutup dengan cara APAPUN sampai user benar-benar memilih!
-    $desaSelect.on('select2:closing', function (e) {
-        if (!$(this).val()) {
-            e.preventDefault();
-        }
-    });
+                        option.selected = true;
 
-    function updateDesaDropdown(kecamatanId, autoOpen = false) {
-        $desaSelect.empty();
-        $desaSelect.append(new Option('Pilih Desa / Kelurahan', '', true, true));
-        $desaSelect.prop('disabled', true);
-        
-        if (!kecamatanId) return;
+                    }
 
-        // Fetch data Desa berdasarkan Kecamatan via AJAX
-        $.ajax({
-            url: "{{ route('masyarakat.get.desas') }}",
-            type: "GET",
-            data: { kecamatan_id: kecamatanId },
-            success: function(desas) {
-                desas.forEach(desa => {
-                    const isSelected = oldDesaId == desa.id;
-                    const option = new Option(desa.nama_desa, desa.id, isSelected, isSelected);
-                    $desaSelect.append(option);
-                });
 
-                $desaSelect.prop('disabled', false);
-                $desaSelect.trigger('change.select2');
 
-                if (autoOpen) {
-                    setTimeout(() => {
-                        $desaSelect.select2('open');
-                        
-                        // Menangani issue select2 auto-close di mobile/beberapa browser
-                        // Jika dropdown masih menutup seketika, ini akan memaksa membukanya kembali 1x
-                        if (!$('.select2-container--open').length) {
-                            $desaSelect.select2('open');
-                        }
-                    }, 250);
+                    desaSelect.appendChild(
+                        option
+                    );
+
                 }
-            },
-            error: function() {
-                alert('Gagal mengambil data Desa. Silakan coba lagi.');
-            }
-        });
-    }
+            );
 
-    $kecamatanSelect.on('select2:select', function(e) {
-        updateDesaDropdown(this.value, true);
-    });
-
-    $kecamatanSelect.on('change', function(e) {
-        // Handle programmatic changes (e.g. from initial load) without auto-opening
-        if (!e.originalEvent && !e.params) {
-            updateDesaDropdown(this.value, false);
         }
-    });
 
-    if ($kecamatanSelect.val()) {
-        updateDesaDropdown($kecamatanSelect.val(), false);
-    }
-</script>
-@endsection
+
+
+        kecamatanSelect.addEventListener(
+            'change',
+            function () {
+
+                loadDesa(
+                    this.value
+                );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           LOAD OLD VALUE
+        ===================================================== */
+
+        const oldKecamatan =
+            @json(old('kecamatan'));
+
+        const oldDesa =
+            @json(old('desa'));
+
+
+        if (oldKecamatan) {
+
+            kecamatanSelect.value =
+                oldKecamatan;
+
+            loadDesa(
+                oldKecamatan,
+                oldDesa
+            );
+
+        }
+
+
+
+        /* =====================================================
+           MAP
+        ===================================================== */
+
+        const defaultLatitude =
+            -7.6546;
+
+        const defaultLongitude =
+            111.3230;
+
+
+
+        const map =
+            L.map('map').setView(
+                [
+                    defaultLatitude,
+                    defaultLongitude
+                ],
+                12
+            );
+
+
+
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:
+                    '&copy; OpenStreetMap contributors'
+            }
+        ).addTo(map);
+
+
+
+        let marker = null;
+
+
+
+        /* =====================================================
+           SET LOCATION
+        ===================================================== */
+
+        function setLocation(
+            latitude,
+            longitude
+        ) {
+
+            document.getElementById(
+                'latitude'
+            ).value =
+                latitude.toFixed(7);
+
+
+
+            document.getElementById(
+                'longitude'
+            ).value =
+                longitude.toFixed(7);
+
+
+
+            if (marker) {
+
+                marker.setLatLng([
+                    latitude,
+                    longitude
+                ]);
+
+            } else {
+
+                marker =
+                    L.marker([
+                        latitude,
+                        longitude
+                    ]).addTo(map);
+
+            }
+
+
+
+            map.setView(
+                [
+                    latitude,
+                    longitude
+                ],
+                16
+            );
+
+        }
+
+
+
+        /* =====================================================
+           LOAD OLD COORDINATE
+        ===================================================== */
+
+        const oldLatitude =
+            @json(old('latitude'));
+
+        const oldLongitude =
+            @json(old('longitude'));
+
+
+        if (
+            oldLatitude &&
+            oldLongitude
+        ) {
+
+            setLocation(
+                parseFloat(oldLatitude),
+                parseFloat(oldLongitude)
+            );
+
+        }
+
+
+
+        /* =====================================================
+           CEK WILAYAH KABUPATEN MAGETAN
+        ===================================================== */
+
+        async function isMagetanLocation(
+            latitude,
+            longitude
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        'https://nominatim.openstreetmap.org/reverse?format=json&lat='
+                        + latitude
+                        + '&lon='
+                        + longitude
+                        + '&zoom=10&addressdetails=1'
+                    );
+
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        'Gagal memeriksa wilayah lokasi.'
+                    );
+
+                }
+
+
+
+                const data =
+                    await response.json();
+
+
+
+                const address =
+                    data.address || {};
+
+
+
+                const wilayah = (
+                    address.county ||
+                    address.municipality ||
+                    address.city ||
+                    ''
+                ).toLowerCase();
+
+
+
+                return wilayah.includes(
+                    'magetan'
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                return false;
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           MAP CLICK
+        ===================================================== */
+
+        map.on(
+            'click',
+            async function (e) {
+
+                const latitude =
+                    e.latlng.lat;
+
+
+                const longitude =
+                    e.latlng.lng;
+
+
+
+                const isMagetan =
+                    await isMagetanLocation(
+                        latitude,
+                        longitude
+                    );
+
+
+
+                if (!isMagetan) {
+
+                    alert(
+                        'Lokasi yang dipilih berada di luar Kabupaten Magetan. Pelaporan sampah hanya dapat dilakukan di wilayah Kabupaten Magetan.'
+                    );
+
+
+                    return;
+
+                }
+
+
+
+                setLocation(
+                    latitude,
+                    longitude
+                );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           PENCARIAN LOKASI
+        ===================================================== */
+
+        const searchInput =
+            document.getElementById(
+                'search-location'
+            );
+
+
+        const searchButton =
+            document.getElementById(
+                'btn-search-location'
+            );
+
+
+
+        async function searchLocation() {
+
+            const query =
+                searchInput.value.trim();
+
+
+
+            if (!query) {
+
+                alert(
+                    'Silakan masukkan lokasi yang ingin dicari.'
+                );
+
+
+                searchInput.focus();
+
+                return;
+
+            }
+
+
+
+            searchButton.disabled = true;
+
+
+            searchButton.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        'https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&addressdetails=1&q='
+                        + encodeURIComponent(query)
+                    );
+
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        'Gagal menghubungi layanan pencarian lokasi.'
+                    );
+
+                }
+
+
+
+                const data =
+                    await response.json();
+
+
+
+                if (
+                    !data ||
+                    data.length === 0
+                ) {
+
+                    alert(
+                        'Lokasi tidak ditemukan. Coba gunakan nama jalan, desa, kecamatan, atau tempat yang lebih spesifik.'
+                    );
+
+                    return;
+
+                }
+
+
+
+                let magetanLocation =
+                    null;
+
+
+
+                for (
+                    const location of data
+                ) {
+
+                    const latitude =
+                        parseFloat(
+                            location.lat
+                        );
+
+
+                    const longitude =
+                        parseFloat(
+                            location.lon
+                        );
+
+
+
+                    const isMagetan =
+                        await isMagetanLocation(
+                            latitude,
+                            longitude
+                        );
+
+
+
+                    if (isMagetan) {
+
+                        magetanLocation =
+                            location;
+
+
+                        break;
+
+                    }
+
+                }
+
+
+
+                if (!magetanLocation) {
+
+                    alert(
+                        'Lokasi tersebut berada di luar Kabupaten Magetan. Pelaporan sampah hanya dapat dilakukan di wilayah Kabupaten Magetan.'
+                    );
+
+
+                    return;
+
+                }
+
+
+
+                const latitude =
+                    parseFloat(
+                        magetanLocation.lat
+                    );
+
+
+                const longitude =
+                    parseFloat(
+                        magetanLocation.lon
+                    );
+
+
+
+                setLocation(
+                    latitude,
+                    longitude
+                );
+
+
+
+                searchInput.value =
+                    magetanLocation.display_name;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                alert(
+                    'Terjadi kesalahan saat mencari lokasi. Silakan coba lagi.'
+                );
+
+
+            } finally {
+
+                searchButton.disabled =
+                    false;
+
+
+                searchButton.innerHTML =
+                    '<i class="fa-solid fa-magnifying-glass"></i> Cari';
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           TOMBOL CARI
+        ===================================================== */
+
+        searchButton.addEventListener(
+            'click',
+            function () {
+
+                searchLocation();
+
+            }
+        );
+
+
+
+        /* =====================================================
+           TEKAN ENTER
+        ===================================================== */
+
+        searchInput.addEventListener(
+            'keydown',
+            function (event) {
+
+                if (
+                    event.key === 'Enter'
+                ) {
+
+                    event.preventDefault();
+
+                    searchLocation();
+
+                }
+
+            }
+        );
+
+
+
+        /* =====================================================
+           CURRENT LOCATION
+        ===================================================== */
+
+        document.getElementById(
+            'btn-location'
+        ).addEventListener(
+            'click',
+            function () {
+
+
+                if (
+                    !navigator.geolocation
+                ) {
+
+                    alert(
+                        'Browser Anda tidak mendukung fitur lokasi.'
+                    );
+
+                    return;
+
+                }
+
+
+
+                const button = this;
+
+
+
+                button.disabled = true;
+
+
+                button.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa lokasi...';
+
+
+
+                navigator.geolocation.getCurrentPosition(
+
+
+                    async function (position) {
+
+
+                        const latitude =
+                            position.coords.latitude;
+
+
+                        const longitude =
+                            position.coords.longitude;
+
+
+
+                        try {
+
+
+                            const isMagetan =
+                                await isMagetanLocation(
+                                    latitude,
+                                    longitude
+                                );
+
+
+
+                            if (!isMagetan) {
+
+                                alert(
+                                    'Lokasi Anda berada di luar Kabupaten Magetan. Pelaporan sampah hanya dapat dilakukan di wilayah Kabupaten Magetan.'
+                                );
+
+
+                                return;
+
+                            }
+
+
+
+                            setLocation(
+                                latitude,
+                                longitude
+                            );
+
+
+                        } catch (error) {
+
+                            console.error(error);
+
+
+                            alert(
+                                'Lokasi tidak dapat diperiksa. Silakan coba lagi.'
+                            );
+
+
+                        } finally {
+
+                            button.disabled =
+                                false;
+
+
+                            button.innerHTML =
+                                '<i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini';
+
+                        }
+
+                    },
+
+
+                    function (error) {
+
+
+                        button.disabled =
+                            false;
+
+
+                        button.innerHTML =
+                            '<i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini';
+
+
+
+                        alert(
+                            'Lokasi tidak dapat diperoleh. Pastikan izin lokasi diberikan pada browser.'
+                        );
+
+                    },
+
+
+                    {
+                        enableHighAccuracy: true,
+
+                        timeout: 10000,
+
+                        maximumAge: 0
+                    }
+
+                );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           FOTO PREVIEW
+        ===================================================== */
+
+        const fotoInput =
+            document.getElementById(
+                'foto_laporan'
+            );
+
+
+        const previewContainer =
+            document.getElementById(
+                'preview-container'
+            );
+
+
+        const previewImage =
+            document.getElementById(
+                'preview-image'
+            );
+
+
+
+        fotoInput.addEventListener(
+            'change',
+            function () {
+
+
+                const file =
+                    this.files[0];
+
+
+
+                if (!file) {
+
+                    previewContainer.style.display =
+                        'none';
+
+                    return;
+
+                }
+
+
+
+                /* =================================================
+                   CEK UKURAN FOTO
+                ================================================= */
+
+                if (
+                    file.size >
+                    2 * 1024 * 1024
+                ) {
+
+                    alert(
+                        'Ukuran foto maksimal 2 MB.'
+                    );
+
+
+                    this.value = '';
+
+
+                    previewContainer.style.display =
+                        'none';
+
+                    return;
+
+                }
+
+
+
+                /* =================================================
+                   CEK FORMAT FOTO
+                ================================================= */
+
+                const allowedTypes = [
+                    'image/jpeg',
+                    'image/png'
+                ];
+
+
+
+                if (
+                    !allowedTypes.includes(
+                        file.type
+                    )
+                ) {
+
+                    alert(
+                        'Foto harus berformat JPG, JPEG, atau PNG.'
+                    );
+
+
+                    this.value = '';
+
+
+                    previewContainer.style.display =
+                        'none';
+
+                    return;
+
+                }
+
+
+
+                /* =================================================
+                   PREVIEW FOTO
+                ================================================= */
+
+                const reader =
+                    new FileReader();
+
+
+
+                reader.onload =
+                    function (event) {
+
+                        previewImage.src =
+                            event.target.result;
+
+
+                        previewContainer.style.display =
+                            'block';
+
+                    };
+
+
+
+                reader.readAsDataURL(
+                    file
+                );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           FIX MAP SIZE
+        ===================================================== */
+
+        setTimeout(
+            function () {
+
+                map.invalidateSize();
+
+            },
+
+            300
+        );
+
+    </script>
+
+</body>
+
+</html>

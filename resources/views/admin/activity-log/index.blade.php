@@ -1,55 +1,294 @@
 @extends('layouts.app')
-@section('title', 'Log Aktivitas')
+
+@section('title', 'Log Aktivitas Sistem')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0">Log Aktivitas Sistem</h3>
-        <button class="btn btn-outline-secondary" onclick="window.location.reload()"><i class="fa-solid fa-arrows-rotate me-2"></i>Refresh</button>
+
+<style>
+    .activity-container {
+        padding: 30px;
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .activity-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .activity-header p {
+        margin: 6px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .refresh-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        background: #166534;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .refresh-btn:hover {
+        background: #14532d;
+        color: white;
+    }
+
+    .activity-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+    .activity-table thead {
+        background: #166534;
+        color: white;
+    }
+
+    .activity-table th {
+        padding: 15px 16px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .activity-table td {
+        padding: 15px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #374151;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .activity-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .activity-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .user-email {
+        display: block;
+        margin-top: 3px;
+        color: #9ca3af;
+        font-size: 12px;
+    }
+
+    .activity-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .module-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .description {
+        max-width: 300px;
+        line-height: 1.5;
+    }
+
+    .ip-address {
+        font-family: monospace;
+        font-size: 12px;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 5px 8px;
+        border-radius: 5px;
+    }
+
+    .time {
+        white-space: nowrap;
+        color: #4b5563;
+    }
+
+    .empty-data {
+        text-align: center;
+        padding: 50px 20px !important;
+        color: #9ca3af !important;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .activity-container {
+            padding: 20px;
+        }
+
+        .activity-header {
+            align-items: flex-start;
+            gap: 15px;
+            flex-direction: column;
+        }
+
+        .activity-header h2 {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<div class="activity-container">
+
+    {{-- Header --}}
+    <div class="activity-header">
+        <div>
+            <h2>Log Aktivitas Sistem</h2>
+            <p>Riwayat aktivitas pengguna yang tercatat di dalam sistem.</p>
+        </div>
+
+        <a href="{{ route('admin.activity-log.index') }}" class="refresh-btn">
+            ↻ Refresh
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+    {{-- Tabel --}}
+    <div class="activity-card">
+        <div class="table-wrapper">
+
+            <table class="activity-table">
+
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Pengguna</th>
+                        <th>Aktivitas</th>
+                        <th>Modul</th>
+                        <th>Deskripsi</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @forelse ($activityLogs as $log)
+
                         <tr>
-                            <th class="py-3 px-4">Waktu</th>
-                            <th>Pengguna</th>
-                            <th>Aktivitas</th>
-                            <th>Modul</th>
-                            <th>Deskripsi / IP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($logs as $log)
-                        <tr>
-                            <td class="py-3 px-4 font-mono text-muted small">{{ $log->created_at->format('d M Y, H:i:s') }}</td>
-                            <td class="fw-bold text-dark"><i class="fa-solid fa-user-circle me-1 text-primary"></i> {{ $log->user->name ?? 'Sistem / Anonim' }}</td>
-                            <td><span class="badge bg-secondary">{{ $log->aktivitas }}</span></td>
-                            <td>{{ $log->modul }}</td>
+
+                            {{-- Waktu --}}
+                            <td class="time">
+                                {{ $log->created_at ? $log->created_at->format('d/m/Y H:i') : '-' }}
+                            </td>
+
+                            {{-- Pengguna --}}
                             <td>
-                                <span class="d-block">{{ $log->deskripsi }}</span>
-                                <small class="text-muted font-mono"><i class="fa-solid fa-network-wired me-1"></i> {{ $log->ip_address ?? '-' }}</small>
+                                @if ($log->user)
+                                    <span class="user-name">
+                                        {{ $log->user->name }}
+                                    </span>
+
+                                    <span class="user-email">
+                                        {{ $log->user->email }}
+                                    </span>
+                                @else
+                                    <span class="user-name">
+                                        Sistem
+                                    </span>
+                                @endif
                             </td>
+
+                            {{-- Aktivitas --}}
+                            <td>
+                                <span class="activity-badge">
+                                    {{ $log->activity }}
+                                </span>
+                            </td>
+
+                            {{-- Modul --}}
+                            <td>
+                                <span class="module-badge">
+                                    {{ $log->module }}
+                                </span>
+                            </td>
+
+                            {{-- Deskripsi --}}
+                            <td class="description">
+                                {{ $log->description ?? '-' }}
+                            </td>
+
+                            {{-- IP Address --}}
+                            <td>
+                                @if ($log->ip_address)
+                                    <span class="ip-address">
+                                        {{ $log->ip_address }}
+                                    </span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+
                         </tr>
-                        @empty
+
+                    @empty
+
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="fa-solid fa-clipboard-list fs-2 mb-3 d-block"></i>
-                                Belum ada log aktivitas yang tercatat di sistem.
+                            <td colspan="6" class="empty-data">
+                                <div class="empty-icon">📋</div>
+                                <strong>Belum ada aktivitas</strong>
+                                <br>
+                                <span>
+                                    Data aktivitas sistem akan muncul di sini.
+                                </span>
                             </td>
                         </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+
+                    @endforelse
+
+                </tbody>
+
+            </table>
+
         </div>
-        @if($logs->hasPages())
-        <div class="card-footer bg-white border-0 pt-4">
-            {{ $logs->links('pagination::bootstrap-5') }}
-        </div>
-        @endif
     </div>
+
 </div>
+
 @endsection
