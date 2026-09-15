@@ -32,6 +32,10 @@
 
                     <form action="{{ route('password.update') }}" method="POST">
                         @csrf
+
+                        <input type="hidden" name="token" value="{{ $token }}">
+                        <input type="hidden" name="email" value="{{ $email }}">
+                        
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-dark">Password Baru</label>
                             <div class="input-group">
