@@ -15,8 +15,6 @@
 
     {{-- =========================================================
          BOOTSTRAP
-         Digunakan untuk membantu membuat tampilan responsive
-         dan menyediakan beberapa komponen CSS.
     ========================================================= --}}
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -26,12 +24,6 @@
 
     {{-- =========================================================
          FONT AWESOME
-         Digunakan untuk menampilkan icon seperti:
-         - icon daun
-         - icon logout
-         - icon pencarian
-         - icon lokasi
-         - icon upload
     ========================================================= --}}
     <link
         rel="stylesheet"
@@ -41,7 +33,6 @@
 
     {{-- =========================================================
          LEAFLET CSS
-         Leaflet digunakan untuk menampilkan peta interaktif.
     ========================================================= --}}
     <link
         rel="stylesheet"
@@ -53,9 +44,8 @@
 
         /* =====================================================
            GLOBAL STYLE
-           box-sizing digunakan agar padding dan border
-           ikut dihitung dalam ukuran elemen.
         ===================================================== */
+
         * {
             box-sizing: border-box;
         }
@@ -63,19 +53,13 @@
 
         /* =====================================================
            BODY
-           Mengatur tampilan dasar seluruh halaman.
         ===================================================== */
+
         body {
             margin: 0;
             padding: 0;
-
-            /* Warna background halaman */
             background: #f4f6f8;
-
-            /* Jenis font */
             font-family: Arial, Helvetica, sans-serif;
-
-            /* Warna tulisan */
             color: #333;
         }
 
@@ -86,24 +70,18 @@
 
         .navbar-sipesat {
 
-            /* Navbar menggunakan warna putih */
             background: white;
 
             color: #333;
 
-            /* Jarak bagian dalam navbar */
             padding: 10px max(20px, calc((100% - 1100px) / 2));
 
-            /* Menyusun elemen secara horizontal */
             display: flex;
 
-            /* Membuat elemen berada di tengah secara vertikal */
             align-items: center;
 
-            /* Satu elemen di kiri dan satu di kanan */
             justify-content: space-between;
 
-            /* Bayangan tipis navbar */
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
         }
 
@@ -186,7 +164,6 @@
 
         /* =====================================================
            WRAPPER
-           Container utama untuk halaman laporan.
         ===================================================== */
 
         .laporan-wrapper {
@@ -202,33 +179,40 @@
             border-radius: 12px;
             overflow: hidden;
 
-            /* Bayangan kotak */
             box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
         }
 
 
         /* =====================================================
            HEADER LAPORAN
+           
+           Dibuat lebih pendek dan sederhana.
         ===================================================== */
 
         .laporan-header {
             background: #176b43;
             color: white;
-            padding: 22px 28px;
+
+            /* Header dibuat lebih pendek */
+            padding: 8px 16px;
         }
 
 
+        /* Judul laporan */
         .laporan-header h2 {
             margin: 0;
-            font-size: 24px;
+
+            font-size: 16px;
+
             font-weight: 600;
+
+            line-height: 1.4;
         }
 
 
+        /* Deskripsi header disembunyikan */
         .laporan-header p {
-            margin: 7px 0 0;
-            font-size: 14px;
-            opacity: 0.9;
+            display: none;
         }
 
 
@@ -289,7 +273,7 @@
         }
 
 
-        /* Input pencarian menggunakan sisa ruang */
+        /* Input pencarian */
         .map-search input {
             flex: 1;
             min-height: 42px;
@@ -316,7 +300,7 @@
         }
 
 
-        /* Tombol menjadi sedikit transparan ketika disabled */
+        /* Tombol disabled */
         .search-btn:disabled {
             opacity: 0.7;
             cursor: not-allowed;
@@ -359,7 +343,7 @@
         }
 
 
-        /* Kotak yang menampilkan latitude dan longitude */
+        /* Kotak koordinat */
         .coordinate-box {
             background: #f8f9fa;
             border: 1px solid #e1e1e1;
@@ -383,7 +367,7 @@
         }
 
 
-        /* Efek ketika mouse diarahkan ke area upload */
+        /* Efek ketika mouse diarahkan */
         .upload-area:hover {
             border-color: #176b43;
             background: #f5fbf8;
@@ -398,7 +382,7 @@
         }
 
 
-        /* Informasi format dan ukuran foto */
+        /* Informasi format */
         .upload-info {
             font-size: 13px;
             color: #777;
@@ -434,7 +418,6 @@
 
             display: flex;
 
-            /* Tombol berada di sebelah kanan */
             justify-content: flex-end;
 
             gap: 10px;
@@ -484,7 +467,6 @@
 
         /* =====================================================
            RESPONSIVE
-           Mengatur tampilan ketika layar kecil.
         ===================================================== */
 
         @media (max-width: 768px) {
@@ -517,20 +499,15 @@
 
 
             .laporan-header {
-                padding: 18px 20px;
+                padding: 8px 16px;
             }
 
 
             .laporan-header h2 {
-                font-size: 20px;
+                font-size: 16px;
             }
 
 
-            /*
-             * Pada layar kecil,
-             * input pencarian dan tombol Cari
-             * disusun secara vertikal.
-             */
             .map-search {
                 flex-direction: column;
             }
@@ -573,7 +550,6 @@
 
             <div class="brand-logo">
 
-                {{-- Icon daun dari Font Awesome --}}
                 <i class="fa-solid fa-leaf"></i>
 
             </div>
@@ -581,7 +557,6 @@
 
             <div class="brand-text">
 
-                {{-- Nama aplikasi --}}
                 <strong>SIPESAT</strong>
 
             </div>
@@ -592,7 +567,6 @@
         {{-- Area informasi user --}}
         <div class="user-area">
 
-            {{-- Menampilkan nama user yang sedang login --}}
             <span>
                 Halo, {{ auth()->user()->name }}
             </span>
@@ -633,17 +607,10 @@
 
                 <h2>
 
-                    {{-- Icon tambah laporan --}}
-                    <i class="fa-solid fa-file-circle-plus"></i>
 
                     Buat Laporan Sampah Baru
 
                 </h2>
-
-
-                <p>
-                    Silakan isi data laporan sampah dengan lengkap dan benar.
-                </p>
 
             </div>
 
@@ -657,7 +624,7 @@
 
 
                 {{-- =================================================
-                     MENAMPILKAN ERROR VALIDASI DARI LARAVEL
+                     ERROR VALIDASI
                 ================================================= --}}
 
                 @if ($errors->any())
@@ -675,7 +642,6 @@
 
                         <ul class="mb-0 mt-2">
 
-                            {{-- Mengulang semua pesan error --}}
                             @foreach ($errors->all() as $error)
 
                                 <li>
@@ -699,13 +665,10 @@
                 <form
                     action="{{ route('masyarakat.laporan.store') }}"
                     method="POST"
-
-                    {{-- multipart diperlukan karena form
-                         mengirim file foto --}}
                     enctype="multipart/form-data"
                 >
 
-                    {{-- Token keamanan Laravel untuk mencegah CSRF --}}
+                    {{-- Token keamanan Laravel --}}
                     @csrf
 
 
@@ -729,14 +692,8 @@
                                 type="text"
                                 name="judul_laporan"
                                 class="form-control"
-
-                                {{-- Contoh isi input --}}
                                 placeholder="Contoh: Tumpukan sampah di pinggir jalan"
-
-                                {{-- old() digunakan agar input tidak hilang
-                                     jika validasi gagal --}}
                                 value="{{ old('judul_laporan') }}"
-
                                 required
                             >
 
@@ -763,14 +720,10 @@
                                 </option>
 
 
-                                {{-- Mengambil data kategori dari controller --}}
                                 @foreach ($kategoriSampah as $kategori)
 
                                     <option
                                         value="{{ $kategori->id }}"
-
-                                        {{-- Jika sebelumnya sudah memilih kategori,
-                                             pilihan tersebut tetap dipilih --}}
                                         {{ old('kategori_sampah_id') == $kategori->id ? 'selected' : '' }}
                                     >
 
@@ -815,7 +768,6 @@
                                 </option>
 
 
-                                {{-- Daftar kecamatan Kabupaten Magetan --}}
                                 <option value="MAGETAN">MAGETAN</option>
                                 <option value="LEMBEYAN">LEMBEYAN</option>
                                 <option value="PLAOSAN">PLAOSAN</option>
@@ -853,9 +805,6 @@
                                 name="desa"
                                 id="desa"
                                 class="form-select"
-
-                                {{-- Awalnya disabled karena
-                                     kecamatan belum dipilih --}}
                                 required
                                 disabled
                             >
@@ -930,9 +879,7 @@
                         <div class="map-container">
 
 
-                            {{-- =================================================
-                                 PENCARIAN LOKASI
-                            ================================================= --}}
+                            {{-- PENCARIAN LOKASI --}}
 
                             <div class="map-search">
 
@@ -940,9 +887,6 @@
                                     type="text"
                                     id="search-location"
                                     class="form-control"
-
-                                    {{-- Memberi tahu user bahwa
-                                         lokasi yang dicari harus di Magetan --}}
                                     placeholder="Cari lokasi di Kabupaten Magetan..."
                                 >
 
@@ -963,17 +907,13 @@
 
 
 
-                            {{-- =================================================
-                                 PETA LEAFLET
-                            ================================================= --}}
+                            {{-- PETA LEAFLET --}}
 
                             <div id="map"></div>
 
 
 
-                            {{-- =================================================
-                                 LOKASI SAAT INI
-                            ================================================= --}}
+                            {{-- LOKASI SAAT INI --}}
 
                             <button
                                 type="button"
@@ -991,9 +931,7 @@
 
 
 
-                        {{-- =================================================
-                             KOORDINAT
-                        ================================================= --}}
+                        {{-- KOORDINAT --}}
 
                         <div class="coordinate-box">
 
@@ -1013,14 +951,8 @@
                                         name="latitude"
                                         id="latitude"
                                         class="form-control"
-
-                                        {{-- Menampilkan koordinat lama
-                                             jika validasi sebelumnya gagal --}}
                                         value="{{ old('latitude') }}"
-
                                         placeholder="Latitude"
-
-                                        {{-- User tidak mengisi manual --}}
                                         readonly
                                     >
 
@@ -1041,11 +973,8 @@
                                         name="longitude"
                                         id="longitude"
                                         class="form-control"
-
                                         value="{{ old('longitude') }}"
-
                                         placeholder="Longitude"
-
                                         readonly
                                     >
 
@@ -1079,16 +1008,12 @@
                             </div>
 
 
-                            {{-- Input file --}}
                             <input
                                 type="file"
                                 name="foto_laporan"
                                 id="foto_laporan"
                                 class="form-control"
-
-                                {{-- Format file yang disarankan --}}
                                 accept=".jpg,.jpeg,.png"
-
                                 required
                             >
 
@@ -1107,9 +1032,7 @@
 
 
 
-                            {{-- =================================================
-                                 PREVIEW FOTO
-                            ================================================= --}}
+                            {{-- PREVIEW FOTO --}}
 
                             <div id="preview-container">
 
@@ -1179,8 +1102,8 @@
 
     {{-- =========================================================
          LEAFLET JAVASCRIPT
-         Mengaktifkan fungsi peta Leaflet.
     ========================================================= --}}
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
@@ -1190,9 +1113,6 @@
 
         /* =====================================================
            DATA DESA / KELURAHAN
-           
-           Object ini digunakan untuk menghubungkan
-           kecamatan dengan daftar desa.
         ===================================================== */
 
         const dataDesa = {
@@ -1349,41 +1269,23 @@
            DROPDOWN KECAMATAN → DESA
         ===================================================== */
 
-        /*
-         * Mengambil elemen dropdown kecamatan
-         * berdasarkan id="kecamatan".
-         */
         const kecamatanSelect =
             document.getElementById('kecamatan');
 
 
-        /*
-         * Mengambil elemen dropdown desa
-         * berdasarkan id="desa".
-         */
         const desaSelect =
             document.getElementById('desa');
 
 
 
-        /*
-         * Fungsi untuk mengisi dropdown desa
-         * berdasarkan kecamatan yang dipilih.
-         */
         function loadDesa(
             kecamatan,
             selectedDesa = ''
         ) {
 
-            /*
-             * Menghapus isi dropdown desa sebelumnya.
-             */
             desaSelect.innerHTML = '';
 
 
-            /*
-             * Membuat pilihan default.
-             */
             const defaultOption =
                 document.createElement('option');
 
@@ -1391,13 +1293,6 @@
             defaultOption.value = '';
 
 
-            /*
-             * Jika kecamatan sudah dipilih,
-             * tampilkan "Pilih Desa".
-             *
-             * Jika belum,
-             * tampilkan "Pilih Kecamatan terlebih dahulu".
-             */
             defaultOption.textContent =
                 kecamatan
                     ? 'Pilih Desa / Kelurahan'
@@ -1408,11 +1303,6 @@
 
 
 
-            /*
-             * Jika kecamatan kosong atau
-             * tidak memiliki data desa,
-             * dropdown desa dinonaktifkan.
-             */
             if (
                 !kecamatan ||
                 !dataDesa[kecamatan]
@@ -1426,24 +1316,13 @@
 
 
 
-            /*
-             * Jika data desa tersedia,
-             * dropdown desa diaktifkan.
-             */
             desaSelect.disabled = false;
 
 
 
-            /*
-             * Mengulang semua desa
-             * pada kecamatan yang dipilih.
-             */
             dataDesa[kecamatan].forEach(
                 function (desa) {
 
-                    /*
-                     * Membuat option baru.
-                     */
                     const option =
                         document.createElement('option');
 
@@ -1454,10 +1333,6 @@
 
 
 
-                    /*
-                     * Jika desa sama dengan data lama,
-                     * jadikan sebagai pilihan terpilih.
-                     */
                     if (
                         desa === selectedDesa
                     ) {
@@ -1467,9 +1342,7 @@
                     }
 
 
-                    /*
-                     * Memasukkan option ke dropdown.
-                     */
+
                     desaSelect.appendChild(
                         option
                     );
@@ -1481,10 +1354,6 @@
 
 
 
-        /*
-         * Ketika user mengganti kecamatan,
-         * fungsi loadDesa() dijalankan.
-         */
         kecamatanSelect.addEventListener(
             'change',
             function () {
@@ -1500,9 +1369,6 @@
 
         /* =====================================================
            LOAD OLD VALUE
-           
-           old() digunakan agar data sebelumnya
-           tidak hilang ketika validasi gagal.
         ===================================================== */
 
         const oldKecamatan =
@@ -1512,10 +1378,6 @@
             @json(old('desa'));
 
 
-        /*
-         * Jika sebelumnya sudah memilih kecamatan,
-         * tampilkan kembali kecamatan dan desanya.
-         */
         if (oldKecamatan) {
 
             kecamatanSelect.value =
@@ -1534,11 +1396,6 @@
            MAP
         ===================================================== */
 
-        /*
-         * Koordinat awal peta.
-         *
-         * Peta akan dibuka di sekitar Kabupaten Magetan.
-         */
         const defaultLatitude =
             -7.6546;
 
@@ -1547,17 +1404,6 @@
 
 
 
-        /*
-         * Membuat peta Leaflet.
-         *
-         * setView([
-         *     latitude,
-         *     longitude
-         * ], zoom);
-         *
-         * Zoom 12 berarti tampilan cukup dekat
-         * untuk melihat wilayah Magetan.
-         */
         const map =
             L.map('map').setView(
                 [
@@ -1569,12 +1415,6 @@
 
 
 
-        /*
-         * Menambahkan layer peta OpenStreetMap.
-         *
-         * OpenStreetMap digunakan sebagai sumber
-         * tampilan peta.
-         */
         L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
@@ -1585,20 +1425,12 @@
 
 
 
-        /*
-         * Variabel untuk menyimpan marker.
-         *
-         * Awalnya belum ada marker.
-         */
         let marker = null;
 
 
 
         /* =====================================================
            SET LOCATION
-           
-           Fungsi ini digunakan ketika lokasi
-           sudah dianggap valid.
         ===================================================== */
 
         function setLocation(
@@ -1606,12 +1438,6 @@
             longitude
         ) {
 
-            /*
-             * Menampilkan latitude pada input.
-             *
-             * toFixed(7) berarti koordinat ditampilkan
-             * sampai 7 angka di belakang koma.
-             */
             document.getElementById(
                 'latitude'
             ).value =
@@ -1619,9 +1445,6 @@
 
 
 
-            /*
-             * Menampilkan longitude.
-             */
             document.getElementById(
                 'longitude'
             ).value =
@@ -1629,10 +1452,6 @@
 
 
 
-            /*
-             * Jika marker sudah ada,
-             * pindahkan marker ke lokasi baru.
-             */
             if (marker) {
 
                 marker.setLatLng([
@@ -1642,10 +1461,6 @@
 
             } else {
 
-                /*
-                 * Jika marker belum ada,
-                 * buat marker baru.
-                 */
                 marker =
                     L.marker([
                         latitude,
@@ -1656,11 +1471,6 @@
 
 
 
-            /*
-             * Memusatkan peta ke lokasi yang dipilih.
-             *
-             * Zoom 16 membuat lokasi terlihat lebih detail.
-             */
             map.setView(
                 [
                     latitude,
@@ -1684,10 +1494,6 @@
             @json(old('longitude'));
 
 
-        /*
-         * Jika sebelumnya sudah memiliki koordinat,
-         * tampilkan kembali marker pada peta.
-         */
         if (
             oldLatitude &&
             oldLongitude
@@ -1704,20 +1510,8 @@
 
         /* =====================================================
            CEK WILAYAH KABUPATEN MAGETAN
-           
-           INI ADALAH BAGIAN PALING PENTING
-           UNTUK MEMBATASI LOKASI.
         ===================================================== */
 
-        /*
-         * Fungsi ini menerima:
-         *
-         * latitude
-         * longitude
-         *
-         * kemudian mengecek apakah koordinat
-         * tersebut berada di wilayah Magetan.
-         */
         async function isMagetanLocation(
             latitude,
             longitude
@@ -1725,15 +1519,6 @@
 
             try {
 
-                /*
-                 * Reverse geocoding.
-                 *
-                 * Koordinat latitude + longitude
-                 * dikirim ke Nominatim.
-                 *
-                 * Nominatim kemudian mengembalikan
-                 * informasi wilayah dari koordinat tersebut.
-                 */
                 const response =
                     await fetch(
                         'https://nominatim.openstreetmap.org/reverse?format=json&lat='
@@ -1745,9 +1530,6 @@
 
 
 
-                /*
-                 * Mengecek apakah request berhasil.
-                 */
                 if (!response.ok) {
 
                     throw new Error(
@@ -1758,29 +1540,16 @@
 
 
 
-                /*
-                 * Mengubah response menjadi JSON.
-                 */
                 const data =
                     await response.json();
 
 
 
-                /*
-                 * Mengambil informasi alamat
-                 * dari hasil Nominatim.
-                 */
                 const address =
                     data.address || {};
 
 
 
-                /*
-                 * Mengambil nama wilayah.
-                 *
-                 * Nominatim dapat menyimpan wilayah
-                 * pada county, municipality, atau city.
-                 */
                 const wilayah = (
                     address.county ||
                     address.municipality ||
@@ -1790,17 +1559,6 @@
 
 
 
-                /*
-                 * =================================================
-                 * PEMBATAS WILAYAH MAGETAN
-                 * =================================================
-                 *
-                 * Jika wilayah mengandung kata "magetan",
-                 * maka fungsi menghasilkan TRUE.
-                 *
-                 * Jika tidak mengandung "magetan",
-                 * maka menghasilkan FALSE.
-                 */
                 return wilayah.includes(
                     'magetan'
                 );
@@ -1808,16 +1566,8 @@
 
             } catch (error) {
 
-                /*
-                 * Menampilkan error di console browser.
-                 */
                 console.error(error);
 
-
-                /*
-                 * Jika terjadi error,
-                 * lokasi dianggap tidak valid.
-                 */
                 return false;
 
             }
@@ -1828,35 +1578,21 @@
 
         /* =====================================================
            MAP CLICK
-           
-           Ketika user memilih lokasi dengan
-           cara klik langsung pada peta.
         ===================================================== */
 
         map.on(
             'click',
             async function (e) {
 
-                /*
-                 * Mengambil latitude dari titik
-                 * yang diklik user.
-                 */
                 const latitude =
                     e.latlng.lat;
 
 
-                /*
-                 * Mengambil longitude.
-                 */
                 const longitude =
                     e.latlng.lng;
 
 
 
-                /*
-                 * Mengecek apakah titik tersebut
-                 * berada di Kabupaten Magetan.
-                 */
                 const isMagetan =
                     await isMagetanLocation(
                         latitude,
@@ -1865,37 +1601,19 @@
 
 
 
-                /*
-                 * =================================================
-                 * JIKA LOKASI DI LUAR MAGETAN
-                 * =================================================
-                 */
                 if (!isMagetan) {
 
-                    /*
-                     * Menampilkan peringatan kepada user.
-                     */
                     alert(
                         'Lokasi yang dipilih berada di luar Kabupaten Magetan. Pelaporan sampah hanya dapat dilakukan di wilayah Kabupaten Magetan.'
                     );
 
 
-                    /*
-                     * return menghentikan proses.
-                     *
-                     * Marker tidak akan dipindahkan
-                     * ke lokasi tersebut.
-                     */
                     return;
 
                 }
 
 
 
-                /*
-                 * Jika lokasi valid,
-                 * marker dipindahkan ke lokasi.
-                 */
                 setLocation(
                     latitude,
                     longitude
@@ -1908,9 +1626,6 @@
 
         /* =====================================================
            PENCARIAN LOKASI
-           
-           Digunakan ketika user mengetik nama lokasi
-           kemudian menekan tombol "Cari".
         ===================================================== */
 
         const searchInput =
@@ -1926,26 +1641,13 @@
 
 
 
-        /*
-         * Fungsi utama untuk mencari lokasi.
-         */
         async function searchLocation() {
 
-            /*
-             * Mengambil teks dari input pencarian.
-             *
-             * trim() digunakan untuk menghilangkan
-             * spasi kosong di awal dan akhir.
-             */
             const query =
                 searchInput.value.trim();
 
 
 
-            /*
-             * Jika user belum memasukkan pencarian,
-             * tampilkan peringatan.
-             */
             if (!query) {
 
                 alert(
@@ -1961,40 +1663,15 @@
 
 
 
-            /*
-             * Menonaktifkan tombol selama proses pencarian.
-             */
             searchButton.disabled = true;
 
 
-            /*
-             * Mengubah tulisan tombol menjadi
-             * "Mencari..." dan menampilkan spinner.
-             */
             searchButton.innerHTML =
                 '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
 
 
 
             try {
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | PENCARIAN LOKASI DI INDONESIA
-                |--------------------------------------------------------------------------
-                |
-                | countrycodes=id
-                | digunakan agar pencarian hanya dilakukan
-                | di negara Indonesia.
-                |
-                | PERHATIAN:
-                | countrycodes=id BELUM berarti hanya Magetan.
-                |
-                | Pembatasan Magetan dilakukan setelah hasil
-                | pencarian diperoleh.
-                |--------------------------------------------------------------------------
-                */
 
                 const response =
                     await fetch(
@@ -2004,9 +1681,6 @@
 
 
 
-                /*
-                 * Jika request gagal.
-                 */
                 if (!response.ok) {
 
                     throw new Error(
@@ -2017,17 +1691,11 @@
 
 
 
-                /*
-                 * Mengubah hasil pencarian menjadi JSON.
-                 */
                 const data =
                     await response.json();
 
 
 
-                /*
-                 * Jika Nominatim tidak menemukan lokasi.
-                 */
                 if (
                     !data ||
                     data.length === 0
@@ -2043,42 +1711,21 @@
 
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | CARI HASIL YANG BERADA DI MAGETAN
-                |--------------------------------------------------------------------------
-                |
-                | Nominatim bisa memberikan beberapa hasil.
-                |
-                | Karena itu setiap hasil diperiksa satu per satu.
-                |--------------------------------------------------------------------------
-                */
-
                 let magetanLocation =
                     null;
 
 
 
-                /*
-                 * Melakukan perulangan pada semua
-                 * hasil pencarian.
-                 */
                 for (
                     const location of data
                 ) {
 
-                    /*
-                     * Mengambil latitude dari hasil pencarian.
-                     */
                     const latitude =
                         parseFloat(
                             location.lat
                         );
 
 
-                    /*
-                     * Mengambil longitude.
-                     */
                     const longitude =
                         parseFloat(
                             location.lon
@@ -2086,10 +1733,6 @@
 
 
 
-                    /*
-                     * Mengecek apakah hasil tersebut
-                     * berada di Kabupaten Magetan.
-                     */
                     const isMagetan =
                         await isMagetanLocation(
                             latitude,
@@ -2098,21 +1741,12 @@
 
 
 
-                    /*
-                     * Jika hasil berada di Magetan,
-                     * simpan hasil tersebut.
-                     */
                     if (isMagetan) {
 
                         magetanLocation =
                             location;
 
 
-                        /*
-                         * break digunakan untuk menghentikan
-                         * pencarian setelah menemukan hasil
-                         * pertama yang valid di Magetan.
-                         */
                         break;
 
                     }
@@ -2121,51 +1755,25 @@
 
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | JIKA TIDAK ADA HASIL DI MAGETAN
-                |--------------------------------------------------------------------------
-                */
-
                 if (!magetanLocation) {
 
-                    /*
-                     * =================================================
-                     * PERINGATAN LOKASI DI LUAR MAGETAN
-                     * =================================================
-                     */
                     alert(
                         'Lokasi tersebut berada di luar Kabupaten Magetan. Pelaporan sampah hanya dapat dilakukan di wilayah Kabupaten Magetan.'
                     );
 
 
-                    /*
-                     * Menghentikan proses.
-                     */
                     return;
 
                 }
 
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | JIKA LOKASI VALID / BERADA DI MAGETAN
-                |--------------------------------------------------------------------------
-                */
-
-                /*
-                 * Mengambil latitude dari hasil yang valid.
-                 */
                 const latitude =
                     parseFloat(
                         magetanLocation.lat
                     );
 
 
-                /*
-                 * Mengambil longitude.
-                 */
                 const longitude =
                     parseFloat(
                         magetanLocation.lon
@@ -2173,10 +1781,6 @@
 
 
 
-                /*
-                 * Memindahkan marker ke lokasi
-                 * yang sudah lolos pengecekan Magetan.
-                 */
                 setLocation(
                     latitude,
                     longitude
@@ -2184,25 +1788,15 @@
 
 
 
-                /*
-                 * Mengisi input pencarian dengan
-                 * nama lengkap lokasi hasil pencarian.
-                 */
                 searchInput.value =
                     magetanLocation.display_name;
 
 
             } catch (error) {
 
-                /*
-                 * Menampilkan error ke console.
-                 */
                 console.error(error);
 
 
-                /*
-                 * Memberikan pesan kepada user.
-                 */
                 alert(
                     'Terjadi kesalahan saat mencari lokasi. Silakan coba lagi.'
                 );
@@ -2210,18 +1804,10 @@
 
             } finally {
 
-                /*
-                 * Tombol pencarian diaktifkan kembali
-                 * setelah proses selesai.
-                 */
                 searchButton.disabled =
                     false;
 
 
-                /*
-                 * Mengembalikan tampilan tombol
-                 * menjadi "Cari".
-                 */
                 searchButton.innerHTML =
                     '<i class="fa-solid fa-magnifying-glass"></i> Cari';
 
@@ -2233,9 +1819,6 @@
 
         /* =====================================================
            TOMBOL CARI
-           
-           Ketika tombol "Cari" diklik,
-           jalankan fungsi searchLocation().
         ===================================================== */
 
         searchButton.addEventListener(
@@ -2251,33 +1834,18 @@
 
         /* =====================================================
            TEKAN ENTER
-           
-           User juga bisa mencari lokasi
-           dengan menekan tombol Enter.
         ===================================================== */
 
         searchInput.addEventListener(
             'keydown',
             function (event) {
 
-                /*
-                 * Mengecek apakah tombol yang ditekan
-                 * adalah Enter.
-                 */
                 if (
                     event.key === 'Enter'
                 ) {
 
-                    /*
-                     * Mencegah form melakukan submit
-                     * ketika user menekan Enter.
-                     */
                     event.preventDefault();
 
-
-                    /*
-                     * Jalankan pencarian lokasi.
-                     */
                     searchLocation();
 
                 }
@@ -2289,9 +1857,6 @@
 
         /* =====================================================
            CURRENT LOCATION
-           
-           Menggunakan GPS/browser untuk mengambil
-           lokasi pengguna saat ini.
         ===================================================== */
 
         document.getElementById(
@@ -2301,10 +1866,6 @@
             function () {
 
 
-                /*
-                 * Mengecek apakah browser mendukung
-                 * Geolocation API.
-                 */
                 if (
                     !navigator.geolocation
                 ) {
@@ -2319,53 +1880,28 @@
 
 
 
-                /*
-                 * Menyimpan tombol ke dalam variabel
-                 * agar mudah diubah tampilannya.
-                 */
                 const button = this;
 
 
 
-                /*
-                 * Menonaktifkan tombol sementara
-                 * selama GPS sedang diproses.
-                 */
                 button.disabled = true;
 
 
-                /*
-                 * Mengubah tulisan tombol.
-                 */
                 button.innerHTML =
                     '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa lokasi...';
 
 
 
-                /*
-                 * Meminta lokasi GPS pengguna.
-                 */
                 navigator.geolocation.getCurrentPosition(
 
 
-                    /*
-                     * =================================================
-                     * JIKA GPS BERHASIL DIDAPATKAN
-                     * =================================================
-                     */
                     async function (position) {
 
 
-                        /*
-                         * Mengambil latitude dari GPS.
-                         */
                         const latitude =
                             position.coords.latitude;
 
 
-                        /*
-                         * Mengambil longitude dari GPS.
-                         */
                         const longitude =
                             position.coords.longitude;
 
@@ -2373,16 +1909,6 @@
 
                         try {
 
-
-                            /*
-                            |--------------------------------------------------------------------------
-                            | CEK LOKASI SAAT INI
-                            |--------------------------------------------------------------------------
-                            |
-                            | Koordinat GPS diperiksa menggunakan
-                            | fungsi isMagetanLocation().
-                            |--------------------------------------------------------------------------
-                            */
 
                             const isMagetan =
                                 await isMagetanLocation(
@@ -2392,41 +1918,19 @@
 
 
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | JIKA GPS BERADA DI LUAR MAGETAN
-                            |--------------------------------------------------------------------------
-                            */
-
                             if (!isMagetan) {
 
-                                /*
-                                 * Memberikan peringatan.
-                                 */
                                 alert(
                                     'Lokasi Anda berada di luar Kabupaten Magetan. Pelaporan sampah hanya dapat dilakukan di wilayah Kabupaten Magetan.'
                                 );
 
 
-                                /*
-                                 * Hentikan proses.
-                                 */
                                 return;
 
                             }
 
 
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | JIKA GPS BERADA DI MAGETAN
-                            |--------------------------------------------------------------------------
-                            */
-
-                            /*
-                             * Lokasi GPS diterima
-                             * dan marker dipindahkan.
-                             */
                             setLocation(
                                 latitude,
                                 longitude
@@ -2435,9 +1939,6 @@
 
                         } catch (error) {
 
-                            /*
-                             * Menampilkan error ke console.
-                             */
                             console.error(error);
 
 
@@ -2448,16 +1949,10 @@
 
                         } finally {
 
-                            /*
-                             * Mengaktifkan kembali tombol.
-                             */
                             button.disabled =
                                 false;
 
 
-                            /*
-                             * Mengembalikan tulisan tombol.
-                             */
                             button.innerHTML =
                                 '<i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini';
 
@@ -2466,33 +1961,18 @@
                     },
 
 
-                    /*
-                     * =================================================
-                     * JIKA GPS GAGAL
-                     * =================================================
-                     */
                     function (error) {
 
 
-                        /*
-                         * Mengaktifkan kembali tombol.
-                         */
                         button.disabled =
                             false;
 
 
-                        /*
-                         * Mengembalikan tulisan tombol.
-                         */
                         button.innerHTML =
                             '<i class="fa-solid fa-location-crosshairs"></i> Gunakan Lokasi Saat Ini';
 
 
 
-                        /*
-                         * Menampilkan pesan bahwa lokasi
-                         * tidak berhasil diperoleh.
-                         */
                         alert(
                             'Lokasi tidak dapat diperoleh. Pastikan izin lokasi diberikan pada browser.'
                         );
@@ -2500,27 +1980,11 @@
                     },
 
 
-                    /*
-                     * =================================================
-                     * PENGATURAN GPS
-                     * =================================================
-                     */
                     {
-                        /*
-                         * Meminta akurasi lokasi yang lebih tinggi.
-                         */
                         enableHighAccuracy: true,
 
-                        /*
-                         * Waktu maksimal menunggu GPS
-                         * adalah 10 detik.
-                         */
                         timeout: 10000,
 
-                        /*
-                         * Tidak menggunakan lokasi lama
-                         * yang tersimpan di cache.
-                         */
                         maximumAge: 0
                     }
 
@@ -2533,31 +1997,20 @@
 
         /* =====================================================
            FOTO PREVIEW
-           
-           Menampilkan preview foto sebelum dikirim.
         ===================================================== */
 
-        /*
-         * Mengambil input file.
-         */
         const fotoInput =
             document.getElementById(
                 'foto_laporan'
             );
 
 
-        /*
-         * Mengambil container preview.
-         */
         const previewContainer =
             document.getElementById(
                 'preview-container'
             );
 
 
-        /*
-         * Mengambil elemen gambar preview.
-         */
         const previewImage =
             document.getElementById(
                 'preview-image'
@@ -2565,28 +2018,16 @@
 
 
 
-        /*
-         * Event change dijalankan ketika
-         * user memilih file.
-         */
         fotoInput.addEventListener(
             'change',
             function () {
 
 
-                /*
-                 * Mengambil file pertama
-                 * yang dipilih user.
-                 */
                 const file =
                     this.files[0];
 
 
 
-                /*
-                 * Jika tidak ada file,
-                 * preview disembunyikan.
-                 */
                 if (!file) {
 
                     previewContainer.style.display =
@@ -2598,14 +2039,10 @@
 
 
 
-                /*
-                 * =================================================
-                 * CEK UKURAN FOTO
-                 * =================================================
-                 *
-                 * 2 * 1024 * 1024
-                 * berarti 2 MB.
-                 */
+                /* =================================================
+                   CEK UKURAN FOTO
+                ================================================= */
+
                 if (
                     file.size >
                     2 * 1024 * 1024
@@ -2616,15 +2053,9 @@
                     );
 
 
-                    /*
-                     * Mengosongkan input file.
-                     */
                     this.value = '';
 
 
-                    /*
-                     * Menyembunyikan preview.
-                     */
                     previewContainer.style.display =
                         'none';
 
@@ -2634,11 +2065,9 @@
 
 
 
-                /*
-                 * =================================================
-                 * CEK FORMAT FOTO
-                 * =================================================
-                 */
+                /* =================================================
+                   CEK FORMAT FOTO
+                ================================================= */
 
                 const allowedTypes = [
                     'image/jpeg',
@@ -2647,10 +2076,6 @@
 
 
 
-                /*
-                 * Mengecek apakah tipe file
-                 * termasuk format yang diperbolehkan.
-                 */
                 if (
                     !allowedTypes.includes(
                         file.type
@@ -2662,15 +2087,9 @@
                     );
 
 
-                    /*
-                     * Mengosongkan input.
-                     */
                     this.value = '';
 
 
-                    /*
-                     * Menyembunyikan preview.
-                     */
                     previewContainer.style.display =
                         'none';
 
@@ -2680,39 +2099,22 @@
 
 
 
-                /*
-                 * =================================================
-                 * PREVIEW FOTO
-                 * =================================================
-                 */
+                /* =================================================
+                   PREVIEW FOTO
+                ================================================= */
 
-                /*
-                 * FileReader digunakan untuk membaca
-                 * file yang dipilih oleh user.
-                 */
                 const reader =
                     new FileReader();
 
 
 
-                /*
-                 * Ketika file berhasil dibaca,
-                 * tampilkan hasilnya pada gambar preview.
-                 */
                 reader.onload =
                     function (event) {
 
-                        /*
-                         * Memasukkan hasil file
-                         * ke atribut src gambar.
-                         */
                         previewImage.src =
                             event.target.result;
 
 
-                        /*
-                         * Menampilkan container preview.
-                         */
                         previewContainer.style.display =
                             'block';
 
@@ -2720,10 +2122,6 @@
 
 
 
-                /*
-                 * Membaca file sebagai Data URL
-                 * agar dapat ditampilkan sebagai gambar.
-                 */
                 reader.readAsDataURL(
                     file
                 );
@@ -2735,24 +2133,15 @@
 
         /* =====================================================
            FIX MAP SIZE
-           
-           Memastikan ukuran peta dihitung ulang
-           setelah halaman selesai ditampilkan.
         ===================================================== */
 
         setTimeout(
             function () {
 
-                /*
-                 * Leaflet menghitung ulang ukuran peta.
-                 */
                 map.invalidateSize();
 
             },
 
-            /*
-             * Jalankan setelah 300 milidetik.
-             */
             300
         );
 
