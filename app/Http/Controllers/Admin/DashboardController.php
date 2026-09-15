@@ -1,43 +1,92 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
-use App\Models\LaporanSampah;
-use App\Models\Petugas;
-use App\Models\KategoriSampah;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index() {
-        // Kartu Statistik
-        $totalLaporan = LaporanSampah::count();
-        $menunggu = LaporanSampah::where('status', 'menunggu_verifikasi')->count();
-        $diproses = LaporanSampah::whereIn('status', ['diverifikasi', 'sedang_ditangani'])->count();
-        $selesai = LaporanSampah::where('status', 'selesai')->count();
-        $ditolak = LaporanSampah::where('status', 'ditolak')->count();
-        
-        $totalPetugas = Petugas::where('status_petugas', 'aktif')->count();
-        
-        // Data untuk Grafik Kategori
-        $kategoriData = DB::table('laporan_sampahs')
-            ->join('kategori_sampahs', 'laporan_sampahs.kategori_sampah_id', '=', 'kategori_sampahs.id')
-            ->select('kategori_sampahs.nama_kategori', DB::raw('count(laporan_sampahs.id) as total'))
-            ->groupBy('kategori_sampahs.id', 'kategori_sampahs.nama_kategori')
-            ->get();
-            
-        $chartLabels = $kategoriData->pluck('nama_kategori');
-        $chartValues = $kategoriData->pluck('total');
+    public function index()
+    {
+        // ==========================
+        // KARTU STATISTIK
+        // ==========================
 
-        // Data untuk Live Map
-        $laporansMap = LaporanSampah::with(['kategoriSampah', 'user'])
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->latest()
-            ->get(['id', 'kode_laporan', 'judul_laporan', 'alamat_lengkap', 'latitude', 'longitude', 'status', 'kategori_sampah_id', 'user_id', 'created_at']);
+        $totalLaporan = 25;
 
-        return view("admin.dashboard", compact(
-            'totalLaporan', 'menunggu', 'diproses', 'selesai', 'ditolak', 'totalPetugas', 
-            'chartLabels', 'chartValues', 'laporansMap'
+        $menunggu = 8;
+
+        $diproses = 7;
+
+        $selesai = 8;
+
+        $ditolak = 2;
+
+
+        // ==========================
+        // PETUGAS AKTIF
+        // ==========================
+
+        $totalPetugas = 5;
+
+
+        // ==========================
+        // DATA GRAFIK KATEGORI
+        // ==========================
+
+        $chartLabels = [
+            'Sampah Rumah Tangga',
+            'Sampah Lingkungan',
+            'Sampah Organik'
+        ];
+
+        $chartValues = [
+            10,
+            8,
+            7
+        ];
+
+
+        // ==========================
+        // DATA PETA
+        // ==========================
+
+        $laporansMap = [
+            [
+                'latitude' => -7.6531,
+                'longitude' => 111.3284,
+                'judul_laporan' => 'Tumpukan Sampah di Jalan',
+                'kategori' => 'Sampah Lingkungan'
+            ],
+            [
+                'latitude' => -7.6555,
+                'longitude' => 111.3310,
+                'judul_laporan' => 'Sampah Rumah Tangga',
+                'kategori' => 'Sampah Rumah Tangga'
+            ],
+            [
+                'latitude' => -7.6490,
+                'longitude' => 111.3250,
+                'judul_laporan' => 'Sampah Organik Menumpuk',
+                'kategori' => 'Sampah Organik'
+            ]
+        ];
+
+
+        // ==========================
+        // KIRIM DATA KE VIEW
+        // ==========================
+
+        return view('admin.dashboard', compact(
+            'totalLaporan',
+            'menunggu',
+            'diproses',
+            'selesai',
+            'ditolak',
+            'totalPetugas',
+            'chartLabels',
+            'chartValues',
+            'laporansMap'
         ));
     }
 }

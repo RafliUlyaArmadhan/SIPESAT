@@ -1,142 +1,360 @@
 @extends('layouts.app')
+
 @section('title', 'Manajemen Laporan')
 
 @section('content')
+
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0">Manajemen Laporan</h3>
-        <div>
-            <a href="{{ route('admin.laporan.export.pdf', request()->all()) }}" class="btn btn-outline-danger me-2" target="_blank"><i class="fa-solid fa-file-pdf me-1"></i> Export PDF</a>
-            <a href="{{ route('admin.laporan.export.excel', request()->all()) }}" class="btn btn-outline-success"><i class="fa-solid fa-file-excel me-1"></i> Export Excel</a>
-        </div>
+
+    {{-- HEADER --}}
+    <div class="mb-4">
+        <h4 class="fw-bold mb-1">
+            Manajemen Laporan
+        </h4>
+
+        <p class="text-muted mb-0">
+            Daftar laporan sampah yang masuk
+        </p>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card shadow-sm border-0 mb-4">
+
+    {{-- PESAN SUKSES --}}
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+
+    {{-- FILTER --}}
+    <div class="card border-0 shadow-sm mb-4">
+
         <div class="card-body">
-            <form action="{{ route('admin.laporan.index') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Status</label>
-                    <select name="status" class="form-select form-select-sm">
-                        <option value="">Semua Status</option>
-                        <option value="menunggu_verifikasi" {{ request('status') == 'menunggu_verifikasi' ? 'selected' : '' }}>Menunggu Verifikasi</option>
-                        <option value="diverifikasi" {{ request('status') == 'diverifikasi' ? 'selected' : '' }}>Diverifikasi</option>
-                        <option value="sedang_ditangani" {{ request('status') == 'sedang_ditangani' ? 'selected' : '' }}>Sedang Ditangani</option>
-                        <option value="menunggu_validasi_akhir" {{ request('status') == 'menunggu_validasi_akhir' ? 'selected' : '' }}>Menunggu Validasi Akhir</option>
-                        <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                        <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Kategori</label>
-                    <select name="kategori_sampah_id" class="form-select form-select-sm">
-                        <option value="">Semua Kategori</option>
-                        @foreach($kategoris as $k)
-                            <option value="{{ $k->id }}" {{ request('kategori_sampah_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_kategori }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Kecamatan</label>
-                    <select name="kecamatan_id" class="form-select form-select-sm">
-                        <option value="">Semua Kecamatan</option>
-                        @foreach($kecamatans as $kec)
-                            <option value="{{ $kec->id }}" {{ request('kecamatan_id') == $kec->id ? 'selected' : '' }}>{{ $kec->nama_kecamatan }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Petugas</label>
-                    <select name="petugas_id" class="form-select form-select-sm">
-                        <option value="">Semua Petugas</option>
-                        @foreach($petugasList as $p)
-                            <option value="{{ $p->id }}" {{ request('petugas_id') == $p->id ? 'selected' : '' }}>{{ $p->user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small text-muted">Rentang Tanggal</label>
-                    <div class="input-group input-group-sm">
-                        <input type="date" name="tanggal_mulai" class="form-control" value="{{ request('tanggal_mulai') }}">
-                        <span class="input-group-text">-</span>
-                        <input type="date" name="tanggal_akhir" class="form-control" value="{{ request('tanggal_akhir') }}">
+
+            <form method="GET"
+                  action="{{ route('admin.laporan.index') }}">
+
+                <div class="row g-3">
+
+                    {{-- STATUS --}}
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Status
+                        </label>
+
+                        <select name="status"
+                                class="form-select">
+
+                            <option value="">
+                                Semua Status
+                            </option>
+
+                            <option value="menunggu_verifikasi"
+                                {{ request('status') == 'menunggu_verifikasi' ? 'selected' : '' }}>
+                                Menunggu Verifikasi
+                            </option>
+
+                            <option value="diverifikasi"
+                                {{ request('status') == 'diverifikasi' ? 'selected' : '' }}>
+                                Diverifikasi
+                            </option>
+
+                            <option value="sedang_ditangani"
+                                {{ request('status') == 'sedang_ditangani' ? 'selected' : '' }}>
+                                Sedang Ditangani
+                            </option>
+
+                            <option value="menunggu_validasi_akhir"
+                                {{ request('status') == 'menunggu_validasi_akhir' ? 'selected' : '' }}>
+                                Menunggu Validasi Akhir
+                            </option>
+
+                            <option value="selesai"
+                                {{ request('status') == 'selesai' ? 'selected' : '' }}>
+                                Selesai
+                            </option>
+
+                            <option value="ditolak"
+                                {{ request('status') == 'ditolak' ? 'selected' : '' }}>
+                                Ditolak
+                            </option>
+
+                        </select>
+
                     </div>
+
+
+                    {{-- KATEGORI --}}
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Kategori Sampah
+                        </label>
+
+                        <select name="kategori_sampah_id"
+                                class="form-select">
+
+                            <option value="">
+                                Semua Kategori
+                            </option>
+
+                            @foreach($kategoris as $kategori)
+
+                                <option value="{{ $kategori->id }}"
+                                    {{ request('kategori_sampah_id') == $kategori->id ? 'selected' : '' }}>
+
+                                    {{ $kategori->nama_kategori }}
+
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+
+                    {{-- KECAMATAN --}}
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Kecamatan
+                        </label>
+
+                        <select name="kecamatan_id"
+                                class="form-select">
+
+                            <option value="">
+                                Semua Kecamatan
+                            </option>
+
+                            @foreach($kecamatans as $kecamatan)
+
+                                <option value="{{ $kecamatan->id }}"
+                                    {{ request('kecamatan_id') == $kecamatan->id ? 'selected' : '' }}>
+
+                                    {{ $kecamatan->nama_kecamatan }}
+
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+
+                    {{-- TOMBOL FILTER --}}
+                    <div class="col-md-3 d-flex align-items-end">
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            <i class="fa-solid fa-filter me-1"></i>
+                            Filter
+
+                        </button>
+
+                    </div>
+
                 </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-filter"></i> Filter</button>
-                </div>
+
             </form>
+
         </div>
+
     </div>
 
-    <!-- Table Section -->
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="py-3 px-4">Kode / Tanggal</th>
-                            <th>Judul Laporan</th>
-                            <th>Kategori</th>
-                            <th>Kecamatan</th>
-                            <th>Petugas Penanganan</th>
-                            <th>Status</th>
-                            <th class="text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($laporans as $laporan)
-                        <tr>
-                            <td class="py-3 px-4">
-                                <span class="d-block font-mono fw-bold text-dark">{{ $laporan->kode_laporan }}</span>
-                                <small class="text-muted">{{ $laporan->created_at->format('d M Y, H:i') }}</small>
-                            </td>
-                            <td>
-                                <span class="d-block fw-semibold">{{ Str::limit($laporan->judul_laporan, 30) }}</span>
-                                <small class="text-muted"><i class="fa-solid fa-user me-1"></i> {{ $laporan->user->name ?? 'Anonim' }}</small>
-                            </td>
-                            <td><span class="badge bg-secondary rounded-pill fw-normal">{{ $laporan->kategoriSampah->nama_kategori ?? '-' }}</span></td>
-                            <td>{{ $laporan->kecamatan->nama_kecamatan ?? '-' }}</td>
-                            <td>
-                                @if($laporan->penugasan && $laporan->penugasan->petugas)
-                                    <span class="text-dark"><i class="fa-solid fa-hard-hat text-warning me-1"></i> {{ $laporan->penugasan->petugas->user->name }}</span>
-                                @else
-                                    <span class="text-muted fst-italic">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @php
-                                    $badgeClass = 'bg-secondary';
-                                    if($laporan->status == 'menunggu_verifikasi') { $badgeClass = 'bg-warning text-dark'; }
-                                    elseif($laporan->status == 'diverifikasi') { $badgeClass = 'bg-info'; }
-                                    elseif($laporan->status == 'sedang_ditangani') { $badgeClass = 'bg-primary'; }
-                                    elseif($laporan->status == 'selesai') { $badgeClass = 'bg-success'; }
-                                    elseif($laporan->status == 'ditolak') { $badgeClass = 'bg-danger'; }
-                                @endphp
-                                <span class="badge {{ $badgeClass }} px-2 py-1">{{ ucwords(str_replace('_', ' ', $laporan->status)) }}</span>
-                            </td>
-                            <td class="text-center">
-                                <a href="{{ route('admin.laporan.show', $laporan->id) }}" class="btn btn-sm btn-outline-primary rounded-circle" title="Lihat Detail">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="fa-solid fa-folder-open fs-2 mb-3 d-block"></i>
-                                Tidak ada data laporan yang cocok dengan filter.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+
+    {{-- DAFTAR LAPORAN --}}
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0
+                    d-flex justify-content-between
+                    align-items-center">
+
+            <h6 class="fw-bold mb-0">
+                Daftar Laporan
+            </h6>
+
+            <span class="badge bg-secondary">
+                {{ $laporans->total() }} Laporan
+            </span>
+
         </div>
-        <div class="card-footer bg-white border-0 pt-4">
-            {{ $laporans->links('pagination::bootstrap-5') }}
+
+
+        <div class="card-body">
+
+            @if($laporans->count() > 0)
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+
+                            <tr>
+                                <th>No</th>
+                                <th>Kode</th>
+                                <th>Judul Laporan</th>
+                                <th>Kategori</th>
+                                <th>Kecamatan</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach($laporans as $laporan)
+
+                                <tr>
+
+                                    {{-- NO --}}
+                                    <td>
+                                        {{
+                                            $loop->iteration
+                                            + (($laporans->currentPage() - 1)
+                                            * $laporans->perPage())
+                                        }}
+                                    </td>
+
+
+                                    {{-- KODE --}}
+                                    <td>
+                                        {{ $laporan->kode_laporan }}
+                                    </td>
+
+
+                                    {{-- JUDUL --}}
+                                    <td>
+                                        {{ $laporan->judul_laporan }}
+                                    </td>
+
+
+                                    {{-- KATEGORI --}}
+                                    <td>
+                                        {{ $laporan->kategoriSampah->nama_kategori ?? '-' }}
+                                    </td>
+
+
+                                    {{-- KECAMATAN --}}
+                                    <td>
+                                        {{ $laporan->kecamatan->nama_kecamatan ?? '-' }}
+                                    </td>
+
+
+                                    {{-- STATUS --}}
+                                    <td>
+
+                                        @if($laporan->status == 'menunggu_verifikasi')
+
+                                            <span class="badge bg-warning text-dark">
+                                                Menunggu Verifikasi
+                                            </span>
+
+                                        @elseif($laporan->status == 'diverifikasi')
+
+                                            <span class="badge bg-info">
+                                                Diverifikasi
+                                            </span>
+
+                                        @elseif($laporan->status == 'sedang_ditangani')
+
+                                            <span class="badge bg-primary">
+                                                Sedang Ditangani
+                                            </span>
+
+                                        @elseif($laporan->status == 'menunggu_validasi_akhir')
+
+                                            <span class="badge bg-warning text-dark">
+                                                Menunggu Validasi Akhir
+                                            </span>
+
+                                        @elseif($laporan->status == 'selesai')
+
+                                            <span class="badge bg-success">
+                                                Selesai
+                                            </span>
+
+                                        @elseif($laporan->status == 'ditolak')
+
+                                            <span class="badge bg-danger">
+                                                Ditolak
+                                            </span>
+
+                                        @else
+
+                                            <span class="badge bg-secondary">
+                                                {{ $laporan->status }}
+                                            </span>
+
+                                        @endif
+
+                                    </td>
+
+
+                                    {{-- AKSI --}}
+                                    <td>
+
+                                        <a href="{{ route('admin.laporan.show', $laporan->id) }}"
+                                           class="btn btn-sm btn-outline-primary">
+
+                                            <i class="fa-solid fa-eye"></i>
+                                            Detail
+
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                            @endforeach
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {{-- PAGINATION --}}
+                <div class="mt-3">
+
+                    {{ $laporans->links() }}
+
+                </div>
+
+
+            @else
+
+                {{-- KOSONG --}}
+                <div class="text-center py-5">
+
+                    <i class="fa-solid fa-file-circle-xmark text-muted"
+                       style="font-size:45px;">
+                    </i>
+
+                    <h6 class="fw-semibold text-muted mt-3">
+                        Tidak ada laporan
+                    </h6>
+
+                    <p class="text-muted small mb-0">
+                        Belum ada laporan yang sesuai dengan filter.
+                    </p>
+
+                </div>
+
+            @endif
+
         </div>
+
     </div>
+
 </div>
+
 @endsection
