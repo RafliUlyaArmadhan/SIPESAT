@@ -1,0 +1,97 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboard;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Petugas\DashboardController as PetugasDashboard;
+
+Route::get('/', [App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/berita/{slug}', [App\Http\Controllers\LandingController::class, 'showBerita'])->name('berita.show');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+    
+    // Forgot Password Routes
+    Route::get('/forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'verifyEmail'])->name('password.verify');
+    Route::get('/reset-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'reset'])->name('password.update');
+});
+
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+use Illuminate\Support\Facades\File;
+
+Route::get('/uploads/{folder}/{filename}', function ($folder, $filename) {
+    $path = public_path('uploads/' . $folder . '/' . $filename);
+    if (!File::exists($path)) {
+        $path = storage_path('uploads/' . $folder . '/' . $filename);
+    }
+    if (!File::exists($path)) {
+        $path = storage_path('app/public/' . $folder . '/' . $filename);
+    }
+    if (!File::exists($path)) {
+        abort(404);
+    }
+    $file = File::get($path);
+    $type = File::mimeType($path);
+    return response($file, 200)->header('Content-Type', $type);
+});
+
+Route::get('/storage/{folder}/{filename}', function ($folder, $filename) {
+    $path = public_path('uploads/' . $folder . '/' . $filename);
+    if (!File::exists($path)) {
+        $path = storage_path('uploads/' . $folder . '/' . $filename);
+    }
+    if (!File::exists($path)) {
+        $path = storage_path('app/public/' . $folder . '/' . $filename);
+    }
+    if (!File::exists($path)) {
+        abort(404);
+    }
+    $file = File::get($path);
+    $type = File::mimeType($path);
+    return response($file, 200)->header('Content-Type', $type);
+});
+
+Route::middleware(['auth', 'active'])->group(function () {
+
+    Route::prefix('masyarakat')->middleware('role:masyarakat')->name('masyarakat.')->group(function () {
+        Route::get('/dashboard', [MasyarakatDashboard::class, 'index'])->name('dashboard');
+        Route::get('/get-desas', function(Illuminate\Http\Request $request) {
+            $kecamatanId = $request->kecamatan_id;
+            return response()->json(App\Models\Desa::where('kecamatan_id', $kecamatanId)->get());
+        })->name('get.desas');
+        Route::resource('laporan', App\Http\Controllers\Masyarakat\LaporanController::class);
+    });
+
+    Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+        Route::get('laporan/export/pdf', [App\Http\Controllers\Admin\LaporanController::class, 'exportPdf'])->name('laporan.export.pdf');
+        Route::get('laporan/export/excel', [App\Http\Controllers\Admin\LaporanController::class, 'exportExcel'])->name('laporan.export.excel');
+        Route::resource('laporan', App\Http\Controllers\Admin\LaporanController::class);
+        Route::post('laporan/{laporan}/verifikasi', [App\Http\Controllers\Admin\LaporanController::class, 'verifikasi'])->name('laporan.verifikasi');
+        Route::post('laporan/{laporan}/tolak', [App\Http\Controllers\Admin\LaporanController::class, 'tolak'])->name('laporan.tolak');
+        Route::post('laporan/{laporan}/tugaskan', [App\Http\Controllers\Admin\LaporanController::class, 'tugaskan'])->name('laporan.tugaskan');
+        Route::post('laporan/{laporan}/validasi-akhir', [App\Http\Controllers\Admin\LaporanController::class, 'validasiAkhir'])->name('laporan.validasi-akhir');
+        Route::get('validasi-pekerjaan', [App\Http\Controllers\Admin\LaporanController::class, 'validasiPekerjaan'])->name('validasi-pekerjaan');
+        
+        Route::resource('kategori-sampah', App\Http\Controllers\Admin\KategoriSampahController::class);
+        Route::resource('wilayah', App\Http\Controllers\Admin\WilayahController::class);
+        Route::resource('petugas', App\Http\Controllers\Admin\PetugasController::class);
+        Route::resource('berita', App\Http\Controllers\Admin\BeritaController::class);
+        Route::get('monitoring', [App\Http\Controllers\Admin\MonitoringController::class, 'index'])->name('monitoring.index');
+        Route::get('statistik', [App\Http\Controllers\Admin\StatistikController::class, 'index'])->name('statistik.index');
+        Route::get('activity-log', [App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
+    });
+
+    Route::prefix('petugas')->middleware('role:petugas')->name('petugas.')->group(function () {
+        Route::get('/dashboard', [PetugasDashboard::class, 'index'])->name('dashboard');
+        Route::resource('tugas', App\Http\Controllers\Petugas\TugasController::class);
+        Route::post('tugas/{tugas}/update-status', [App\Http\Controllers\Petugas\TugasController::class, 'updateStatus'])->name('tugas.update-status');
+    });
+});
