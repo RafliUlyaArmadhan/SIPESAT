@@ -9,6 +9,7 @@ use App\Models\LaporanSampah;
 use App\Models\KategoriSampah;
 use App\Models\Kecamatan;
 use App\Models\Desa;
+use App\Models\Rating;
 
 class LaporanController extends Controller
 {
@@ -116,9 +117,46 @@ class LaporanController extends Controller
             abort(403);
         }
 
+        $rating = Rating::where('laporan_sampah_id', $laporan->id)
+            ->where('user_id', Auth::id())
+            ->first();
+
         return view(
             'masyarakat.laporan.show',
-            compact('laporan')
+            compact('laporan', 'rating')
         );
+    }
+
+    public function storeRating(Request $request, LaporanSampah $laporan)
+    {
+        if ($laporan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($laporan->status !== 'selesai') {
+            return back()->with('error', 'Rating hanya dapat diberikan setelah laporan selesai.');
+        }
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'komentar' => 'nullable|string|max:500',
+        ]);
+
+        $sudahAda = Rating::where('laporan_sampah_id', $laporan->id)
+            ->where('user_id', Auth::id())
+            ->exists();
+
+        if ($sudahAda) {
+            return back()->with('error', 'Laporan ini sudah diberi rating.');
+        }
+
+        Rating::create([
+            'laporan_sampah_id' => $laporan->id,
+            'user_id' => Auth::id(),
+            'rating' => $request->rating,
+            'komentar' => $request->komentar,
+        ]);
+
+        return back()->with('success', 'Rating berhasil disimpan.');
     }
 }

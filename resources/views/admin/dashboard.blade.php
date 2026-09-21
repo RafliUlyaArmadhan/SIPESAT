@@ -9,206 +9,316 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       crossorigin=""/>
 
-<!-- ================= STATISTIK LAPORAN ================= -->
-<div class="row g-3 mb-4">
+<div class="container-fluid">
 
-    <!-- Menunggu Verifikasi -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'menunggu_verifikasi']) }}"
-           class="text-decoration-none text-dark">
+    <!-- ================= HEADER ================= -->
+    <div class="mb-4">
+        <h4 class="fw-bold mb-1">Dashboard Admin</h4>
 
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
-
-                <div>
-                    <span class="text-muted small d-block">
-                        Menunggu Verifikasi
-                    </span>
-
-                    <h3 class="font-mono m-0 fw-bold">
-                        {{ $menunggu }}
-                    </h3>
-                </div>
-
-                <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-clock fs-5"></i>
-                </div>
-
-            </div>
-        </a>
+        <p class="text-muted mb-0">
+            Ringkasan aktivitas SIPESAT
+        </p>
     </div>
 
 
-    <!-- Sedang Ditangani -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'sedang_ditangani']) }}"
-           class="text-decoration-none text-dark">
+    <!-- ================= 6 STATUS LAPORAN ================= -->
+    <div class="row g-3 mb-4">
 
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
+        <!-- Menunggu Verifikasi -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+            <a href="{{ route('admin.laporan.index', ['status' => 'menunggu_verifikasi']) }}"
+               class="text-decoration-none text-dark">
 
-                <div>
-                    <span class="text-muted small d-block">
-                        Sedang Ditangani
-                    </span>
+                <div class="card p-3 border-0 shadow-sm h-100"
+                     style="cursor:pointer;">
 
-                    <h3 class="font-mono m-0 fw-bold text-primary">
-                        {{ $diproses }}
-                    </h3>
-                </div>
+                    <div class="d-flex flex-row justify-content-between align-items-center">
 
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-broom fs-5"></i>
-                </div>
+                        <div>
+                            <span class="text-muted small d-block">
+                                Menunggu Verifikasi
+                            </span>
 
-            </div>
-        </a>
-    </div>
+                            <h3 class="font-mono m-0 fw-bold">
+                                {{ $menungguVerifikasi }}
+                            </h3>
+                        </div>
 
-
-    <!-- Selesai -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'selesai']) }}"
-           class="text-decoration-none text-dark">
-
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
-
-                <div>
-                    <span class="text-muted small d-block">
-                        Selesai
-                    </span>
-
-                    <h3 class="font-mono m-0 fw-bold text-success">
-                        {{ $selesai }}
-                    </h3>
-                </div>
-
-                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-circle-check fs-5"></i>
-                </div>
-
-            </div>
-        </a>
-    </div>
-
-
-    <!-- Ditolak -->
-    <div class="col-md-3">
-        <a href="{{ route('admin.laporan.index', ['status' => 'ditolak']) }}"
-           class="text-decoration-none text-dark">
-
-            <div class="card p-3 d-flex flex-row justify-content-between align-items-center border-0 shadow-sm"
-                 style="cursor:pointer;">
-
-                <div>
-                    <span class="text-muted small d-block">
-                        Ditolak
-                    </span>
-
-                    <h3 class="font-mono m-0 fw-bold text-danger">
-                        {{ $ditolak }}
-                    </h3>
-                </div>
-
-                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-sm"
-                     style="width:45px;height:45px;">
-                    <i class="fa-solid fa-circle-xmark fs-5"></i>
-                </div>
-
-            </div>
-        </a>
-    </div>
-
-</div>
-
-
-<!-- ================= CHART & STATISTIK TAMBAHAN ================= -->
-<div class="row g-4 mb-4">
-
-    <!-- Chart Kategori Sampah -->
-    <div class="col-lg-5">
-
-        <div class="card border-0 shadow-sm h-100">
-
-            <div class="card-header bg-white border-0 pt-4 pb-0">
-
-                <h6 class="fw-bold m-0">
-                    <i class="fa-solid fa-chart-column me-2 text-primary"></i>
-                    Statistik Kategori Sampah
-                </h6>
-
-            </div>
-
-            <div class="card-body">
-
-                <canvas id="kategoriChart"
-                        style="min-height:250px;">
-                </canvas>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- Statistik Tambahan -->
-    <div class="col-lg-7">
-
-        <div class="row g-3">
-
-            <!-- Total Laporan -->
-            <div class="col-sm-6">
-
-                <a href="{{ route('admin.laporan.index') }}"
-                   class="text-decoration-none">
-
-                    <div class="card border-0 shadow-sm text-center p-4 h-100 bg-primary text-white"
-                         style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); cursor:pointer;">
-
-                        <i class="fa-solid fa-file-lines fs-1 mb-3 opacity-75"></i>
-
-                        <h2 class="font-mono fw-bold mb-1">
-                            {{ $totalLaporan }}
-                        </h2>
-
-                        <p class="mb-0">
-                            Total Laporan Masuk
-                        </p>
+                        <div class="rounded-circle bg-warning-subtle text-warning
+                                    d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:45px;height:45px;">
+                            <i class="fa-solid fa-clock fs-5"></i>
+                        </div>
 
                     </div>
+                </div>
+            </a>
+        </div>
 
-                </a>
 
-            </div>
+        <!-- Diverifikasi -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+            <a href="{{ route('admin.laporan.index', ['status' => 'diverifikasi']) }}"
+               class="text-decoration-none text-dark">
 
+                <div class="card p-3 border-0 shadow-sm h-100"
+                     style="cursor:pointer;">
 
-            <!-- Petugas Aktif -->
-            <div class="col-sm-6">
+                    <div class="d-flex flex-row justify-content-between align-items-center">
 
-                <a href="{{ route('admin.petugas.index') }}"
-                   class="text-decoration-none">
+                        <div>
+                            <span class="text-muted small d-block">
+                                Diverifikasi
+                            </span>
 
-                    <div class="card border-0 shadow-sm text-center p-4 h-100 bg-info text-white"
-                         style="background: linear-gradient(135deg, var(--color-info) 0%, #1e5a77 100%); cursor:pointer;">
+                            <h3 class="font-mono m-0 fw-bold text-primary">
+                                {{ $diverifikasi }}
+                            </h3>
+                        </div>
 
-                        <i class="fa-solid fa-users-gear fs-1 mb-3 opacity-75"></i>
-
-                        <h2 class="font-mono fw-bold mb-1">
-                            {{ $totalPetugas }}
-                        </h2>
-
-                        <p class="mb-0">
-                            Petugas Aktif
-                        </p>
+                        <div class="rounded-circle bg-primary-subtle text-primary
+                                    d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:45px;height:45px;">
+                            <i class="fa-solid fa-circle-check fs-5"></i>
+                        </div>
 
                     </div>
+                </div>
+            </a>
+        </div>
 
-                </a>
+
+        <!-- Sedang Ditangani -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+            <a href="{{ route('admin.laporan.index', ['status' => 'sedang_ditangani']) }}"
+               class="text-decoration-none text-dark">
+
+                <div class="card p-3 border-0 shadow-sm h-100"
+                     style="cursor:pointer;">
+
+                    <div class="d-flex flex-row justify-content-between align-items-center">
+
+                        <div>
+                            <span class="text-muted small d-block">
+                                Sedang Ditangani
+                            </span>
+
+                            <h3 class="font-mono m-0 fw-bold text-primary">
+                                {{ $sedangDitangani }}
+                            </h3>
+                        </div>
+
+                        <div class="rounded-circle bg-primary-subtle text-primary
+                                    d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:45px;height:45px;">
+                            <i class="fa-solid fa-broom fs-5"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </a>
+        </div>
+
+
+        <!-- Menunggu Validasi Akhir -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+            <a href="{{ route('admin.laporan.index', ['status' => 'menunggu_validasi_akhir']) }}"
+               class="text-decoration-none text-dark">
+
+                <div class="card p-3 border-0 shadow-sm h-100"
+                     style="cursor:pointer;">
+
+                    <div class="d-flex flex-row justify-content-between align-items-center">
+
+                        <div>
+                            <span class="text-muted small d-block">
+                                Menunggu Validasi Akhir
+                            </span>
+
+                            <h3 class="font-mono m-0 fw-bold text-warning">
+                                {{ $menungguValidasi }}
+                            </h3>
+                        </div>
+
+                        <div class="rounded-circle bg-warning-subtle text-warning
+                                    d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:45px;height:45px;">
+                            <i class="fa-solid fa-hourglass-half fs-5"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </a>
+        </div>
+
+
+        <!-- Selesai -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+            <a href="{{ route('admin.laporan.index', ['status' => 'selesai']) }}"
+               class="text-decoration-none text-dark">
+
+                <div class="card p-3 border-0 shadow-sm h-100"
+                     style="cursor:pointer;">
+
+                    <div class="d-flex flex-row justify-content-between align-items-center">
+
+                        <div>
+                            <span class="text-muted small d-block">
+                                Selesai
+                            </span>
+
+                            <h3 class="font-mono m-0 fw-bold text-success">
+                                {{ $selesai }}
+                            </h3>
+                        </div>
+
+                        <div class="rounded-circle bg-success-subtle text-success
+                                    d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:45px;height:45px;">
+                            <i class="fa-solid fa-circle-check fs-5"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </a>
+        </div>
+
+
+        <!-- Ditolak -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+            <a href="{{ route('admin.laporan.index', ['status' => 'ditolak']) }}"
+               class="text-decoration-none text-dark">
+
+                <div class="card p-3 border-0 shadow-sm h-100"
+                     style="cursor:pointer;">
+
+                    <div class="d-flex flex-row justify-content-between align-items-center">
+
+                        <div>
+                            <span class="text-muted small d-block">
+                                Ditolak
+                            </span>
+
+                            <h3 class="font-mono m-0 fw-bold text-danger">
+                                {{ $ditolak }}
+                            </h3>
+                        </div>
+
+                        <div class="rounded-circle bg-danger-subtle text-danger
+                                    d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:45px;height:45px;">
+                            <i class="fa-solid fa-circle-xmark fs-5"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+
+    <!-- ================= GRAFIK & STATISTIK TAMBAHAN ================= -->
+    <div class="row g-4 mb-4">
+
+        <!-- Grafik Kategori Sampah -->
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+
+                    <h6 class="fw-bold m-0">
+                        <i class="fa-solid fa-chart-column me-2 text-primary"></i>
+                        Statistik Kategori Sampah
+                    </h6>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div style="height:250px;">
+                        <canvas id="kategoriChart"></canvas>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Statistik Tambahan -->
+        <div class="col-lg-7">
+
+            <div class="row g-3 h-100">
+
+                <!-- Total Laporan -->
+                <div class="col-sm-6">
+
+                    <a href="{{ route('admin.laporan.index') }}"
+                       class="text-decoration-none">
+
+                        <div class="card border-0 shadow-sm
+                                    text-center p-3 text-white"
+                             style="
+                                height: 170px;
+                                background: linear-gradient(
+                                    135deg,
+                                    #1f6e43 0%,
+                                    #14532d 100%
+                                );
+                             ">
+
+                            <i class="fa-solid fa-file-lines fs-1 mb-3 opacity-75"></i>
+
+                            <h2 class="font-mono fw-bold mb-1">
+                                {{ $totalLaporan }}
+                            </h2>
+
+                            <p class="mb-0">
+                                Total Laporan Masuk
+                            </p>
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+
+                <!-- Petugas Aktif -->
+                <div class="col-sm-6">
+
+                    <a href="{{ route('admin.petugas.index') }}"
+                       class="text-decoration-none">
+
+                        <div class="card border-0 shadow-sm
+                                    text-center p-3 text-white"
+                             style="
+                                height: 170px;
+                                background: linear-gradient(
+                                    135deg,
+                                    #237da3 0%,
+                                    #1e5a77 100%
+                                );
+                             ">
+
+                            <i class="fa-solid fa-users-gear fs-1 mb-3 opacity-75"></i>
+
+                            <h2 class="font-mono fw-bold mb-1">
+                                {{ $totalPetugas }}
+                            </h2>
+
+                            <p class="mb-0">
+                                Petugas Aktif
+                            </p>
+
+                        </div>
+
+                    </a>
+
+                </div>
 
             </div>
 
@@ -216,48 +326,61 @@
 
     </div>
 
-</div>
 
+    <!-- ================= PETA ================= -->
+    <div class="card border-0 shadow-sm mb-4">
 
-<!-- ================= PETA ================= -->
-<div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-2
+                    d-flex justify-content-between align-items-center">
 
-    <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold m-0">
+                <i class="fa-solid fa-map-location-dot
+                          me-2 text-primary"></i>
+                Peta Sebaran Laporan (Live Map)
+            </h6>
 
-        <h6 class="fw-bold m-0">
+            <div class="small d-flex flex-wrap gap-1 justify-content-end">
 
-            <i class="fa-solid fa-map-location-dot me-2 text-primary"></i>
+                <span class="badge bg-warning text-dark">
+                    Menunggu Verifikasi
+                </span>
 
-            Peta Sebaran Laporan (Live Map)
+                <span class="badge bg-primary">
+                    Diverifikasi
+                </span>
 
-        </h6>
+                <span class="badge bg-primary">
+                    Sedang Ditangani
+                </span>
 
-        <div class="small">
+                <span class="badge bg-warning text-dark">
+                    Menunggu Validasi Akhir
+                </span>
 
-            <span class="badge bg-danger me-1">
-                Belum Diatasi
-            </span>
+                <span class="badge bg-success">
+                    Selesai
+                </span>
 
-            <span class="badge bg-warning text-dark me-1">
-                Masih Diproses
-            </span>
+                <span class="badge bg-danger">
+                    Ditolak
+                </span>
 
-            <span class="badge bg-success">
-                Sudah Diatasi
-            </span>
+            </div>
 
         </div>
 
-    </div>
 
+        <div class="card-body p-0">
 
-    <div class="card-body p-0">
-
-        <div id="adminMap"
-             style="height:500px;
+            <div id="adminMap"
+                 style="
+                    height:500px;
                     width:100%;
-                    border-bottom-left-radius:var(--radius-md);
-                    border-bottom-right-radius:var(--radius-md);">
+                    border-bottom-left-radius:10px;
+                    border-bottom-right-radius:10px;
+                 ">
+            </div>
+
         </div>
 
     </div>
@@ -267,6 +390,7 @@
 
 <!-- ================= CHART.JS ================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 <!-- ================= LEAFLET ================= -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -278,8 +402,7 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-
-    /* ================= CHART ================= */
+    /* ================= GRAFIK ================= */
 
     const ctx = document
         .getElementById('kategoriChart')
@@ -356,7 +479,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-
     /* ================= LEAFLET MAP ================= */
 
     const laporans =
@@ -375,10 +497,9 @@ document.addEventListener("DOMContentLoaded", function () {
             maxZoom: 19,
 
             attribution:
-                '© OpenStreetMap'
+                '&copy; OpenStreetMap contributors'
 
         }
-
     ).addTo(map);
 
 
@@ -389,27 +510,50 @@ document.addEventListener("DOMContentLoaded", function () {
     let hasMarkers = false;
 
 
-    /* Warna marker berdasarkan status */
+    /* Warna marker berdasarkan 6 status */
 
     const colorMap = {
 
         'menunggu_verifikasi':
-            '#dc3545',
+            '#ffc107',
 
         'diverifikasi':
-            '#ffc107',
+            '#0d6efd',
 
         'sedang_ditangani':
-            '#ffc107',
+            '#0d6efd',
 
         'menunggu_validasi_akhir':
-            '#198754',
+            '#fd7e14',
 
         'selesai':
             '#198754',
 
         'ditolak':
             '#dc3545'
+
+    };
+
+
+    const statusLabelMap = {
+
+        'menunggu_verifikasi':
+            'Menunggu Verifikasi',
+
+        'diverifikasi':
+            'Diverifikasi',
+
+        'sedang_ditangani':
+            'Sedang Ditangani',
+
+        'menunggu_validasi_akhir':
+            'Menunggu Validasi Akhir',
+
+        'selesai':
+            'Selesai',
+
+        'ditolak':
+            'Ditolak'
 
     };
 
@@ -469,7 +613,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             const formattedStatus =
-                laporan.status
+                statusLabelMap[laporan.status]
+                || laporan.status
                     .replace(/_/g, ' ')
                     .replace(/\b\w/g,
                         l => l.toUpperCase());
@@ -486,9 +631,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         </h6>
 
                         <span class="badge"
-                              style="background-color:${markerColor};
-                                     font-size:0.65rem;">
+                              style="
+                                background-color:${markerColor};
+                                font-size:0.65rem;
+                              ">
+
                             ${formattedStatus}
+
                         </span>
 
                     </div>
@@ -512,8 +661,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                     <a href="${detailUrl}"
-                       class="btn btn-sm btn-outline-primary w-100 rounded-pill mt-1">
+                       class="btn btn-sm btn-outline-primary
+                              w-100 rounded-pill mt-1">
+
                         Lihat Detail
+
                     </a>
 
                 </div>

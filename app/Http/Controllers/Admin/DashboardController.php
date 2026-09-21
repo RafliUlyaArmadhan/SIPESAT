@@ -3,86 +3,164 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\LaporanSampah;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // ==========================
-        // KARTU STATISTIK
-        // ==========================
+        /*
+        |--------------------------------------------------------------------------
+        | STATISTIK LAPORAN
+        |--------------------------------------------------------------------------
+        | Dashboard menampilkan 6 status yang sama dengan Manajemen Laporan
+        | dan Detail Laporan.
+        */
 
-        $totalLaporan = 25;
+        $menungguVerifikasi = LaporanSampah::where(
+            'status',
+            'menunggu_verifikasi'
+        )->count();
 
-        $menunggu = 8;
+        $diverifikasi = LaporanSampah::where(
+            'status',
+            'diverifikasi'
+        )->count();
 
-        $diproses = 7;
+        $sedangDitangani = LaporanSampah::where(
+            'status',
+            'sedang_ditangani'
+        )->count();
 
-        $selesai = 8;
+        $menungguValidasi = LaporanSampah::where(
+            'status',
+            'menunggu_validasi_akhir'
+        )->count();
 
-        $ditolak = 2;
+        $selesai = LaporanSampah::where(
+            'status',
+            'selesai'
+        )->count();
 
+        $ditolak = LaporanSampah::where(
+            'status',
+            'ditolak'
+        )->count();
 
-        // ==========================
-        // PETUGAS AKTIF
-        // ==========================
+        // Total harus sama dengan seluruh laporan di database.
+        $totalLaporan = LaporanSampah::count();
 
-        $totalPetugas = 5;
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL PETUGAS
+        |--------------------------------------------------------------------------
+        | Error sebelumnya terjadi karena tabel users tidak mempunyai kolom
+        | "role". Di sini struktur dicek terlebih dahulu.
+        */
 
+        $totalPetugas = 0;
 
-        // ==========================
-        // DATA GRAFIK KATEGORI
-        // ==========================
+        if (Schema::hasColumn('users', 'role')) {
+            $totalPetugas = DB::table('users')
+                ->where('role', 'petugas')
+                ->count();
+        } elseif (
+            Schema::hasColumn('users', 'role_id') &&
+            Schema::hasTable('roles') &&
+            Schema::hasColumn('roles', 'name')
+        ) {
+            $totalPetugas = DB::table('users')
+                ->join('roles', 'roles.id', '=', 'users.role_id')
+                ->where('roles.name', 'petugas')
+                ->count();
+        }
 
-        $chartLabels = [
-            'Sampah Rumah Tangga',
-            'Sampah Lingkungan',
-            'Sampah Organik'
-        ];
+        /*
+        |--------------------------------------------------------------------------
+        | GRAFIK KATEGORI SAMPAH
+        |--------------------------------------------------------------------------
+        */
 
-        $chartValues = [
-            10,
-            8,
-            7
-        ];
+        $kategoriData = LaporanSampah::query()
+            ->select(
+                'kategori_sampah_id',
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('kategori_sampah_id')
+            ->with('kategoriSampah:id,nama_kategori')
+            ->get();
 
+        $chartLabels = [];
+        $chartValues = [];
 
-        // ==========================
-        // DATA PETA
-        // ==========================
+        foreach ($kategoriData as $item) {
+            $chartLabels[] =
+                $item->kategoriSampah->nama_kategori
+                ?? 'Tanpa Kategori';
 
-        $laporansMap = [
-            [
-                'latitude' => -7.6531,
-                'longitude' => 111.3284,
-                'judul_laporan' => 'Tumpukan Sampah di Jalan',
-                'kategori' => 'Sampah Lingkungan'
-            ],
-            [
-                'latitude' => -7.6555,
-                'longitude' => 111.3310,
-                'judul_laporan' => 'Sampah Rumah Tangga',
-                'kategori' => 'Sampah Rumah Tangga'
-            ],
-            [
-                'latitude' => -7.6490,
-                'longitude' => 111.3250,
-                'judul_laporan' => 'Sampah Organik Menumpuk',
-                'kategori' => 'Sampah Organik'
-            ]
-        ];
+            $chartValues[] = (int) $item->total;
+        }
 
+        /*
+        |--------------------------------------------------------------------------
+        | DATA PETA
+        |--------------------------------------------------------------------------
+        */
 
-        // ==========================
-        // KIRIM DATA KE VIEW
-        // ==========================
+        $laporansMap = LaporanSampah::query()
+            ->select([
+                'id',
+                'kode_laporan',
+                'judul_laporan',
+                'status',
+                'latitude',
+                'longitude',
+                'user_id',
+                'kategori_sampah_id',
+            ])
+            ->with([
+                'user:id,name',
+                'kategoriSampah:id,nama_kategori',
+            ])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get()
+            ->map(function ($laporan) {
+                return [
+                    'id' => $laporan->id,
+                    'kode_laporan' => $laporan->kode_laporan,
+                    'judul_laporan' => $laporan->judul_laporan,
+                    'status' => $laporan->status,
+                    'latitude' => (float) $laporan->latitude,
+                    'longitude' => (float) $laporan->longitude,
+
+                    'user' => $laporan->user
+                        ? [
+                            'name' => $laporan->user->name,
+                        ]
+                        : null,
+
+                    'kategori_sampah' => $laporan->kategoriSampah
+                        ? [
+                            'nama_kategori' =>
+                                $laporan->kategoriSampah->nama_kategori,
+                        ]
+                        : null,
+                ];
+            })
+            ->values()
+            ->toArray();
 
         return view('admin.dashboard', compact(
-            'totalLaporan',
-            'menunggu',
-            'diproses',
+            'menungguVerifikasi',
+            'diverifikasi',
+            'sedangDitangani',
+            'menungguValidasi',
             'selesai',
             'ditolak',
+            'totalLaporan',
             'totalPetugas',
             'chartLabels',
             'chartValues',
