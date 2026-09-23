@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\KategoriSampah;
 use App\Models\LaporanSampah;
+use App\Mail\LaporanSelesaiMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class LaporanSampahController extends Controller
 {
@@ -86,5 +88,45 @@ class LaporanSampahController extends Controller
         return redirect()
             ->route('masyarakat.dashboard')
             ->with('success', 'Laporan berhasil dikirim.');
+    }
+
+    /**
+     * Mengubah status laporan sampah.
+     */
+    public function updateStatus(Request $request, LaporanSampah $laporan)
+    {
+        $validated = $request->validate([
+            'status' => [
+                'required',
+                'in:menunggu_verifikasi,diproses,selesai,ditolak'
+            ],
+        ]);
+
+        // Simpan status sebelumnya
+        $statusSebelumnya = $laporan->status;
+
+        // Ubah status laporan
+        $laporan->status = $validated['status'];
+
+        // Jika laporan selesai, simpan waktu selesai
+        if ($validated['status'] === 'selesai') {
+            $laporan->completed_at = now();
+        }
+
+        $laporan->save();
+
+        // Kirim email jika laporan baru berubah menjadi selesai
+        if (
+            $validated['status'] === 'selesai' &&
+            $statusSebelumnya !== 'selesai'
+        ) {
+            Mail::to($laporan->user->email)
+                ->send(new LaporanSelesaiMail($laporan));
+        }
+
+        return back()->with(
+            'success',
+            'Status laporan berhasil diperbarui.'
+        );
     }
 }

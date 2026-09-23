@@ -41,7 +41,7 @@ Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 // Dashboard
-Route::middleware(['auth', 'activity.log'])->group(function () { //penempelan middleware nya
+Route::middleware(['auth', 'activity.log'])->group(function () {
 
     // Dashboard Masyarakat
     Route::get('/masyarakat/dashboard', function () {
@@ -49,15 +49,21 @@ Route::middleware(['auth', 'activity.log'])->group(function () { //penempelan mi
     })->name('masyarakat.dashboard');
 
     // Buat Laporan Sampah
-Route::get('/masyarakat/laporan/create', [
-    \App\Http\Controllers\LaporanSampahController::class,
-    'create'
-])->name('masyarakat.laporan.create');
+    Route::get('/masyarakat/laporan/create', [
+        \App\Http\Controllers\LaporanSampahController::class,
+        'create'
+    ])->name('masyarakat.laporan.create');
 
-Route::post('/masyarakat/laporan', [
-    \App\Http\Controllers\LaporanSampahController::class,
-    'store'
-])->name('masyarakat.laporan.store');
+    Route::post('/masyarakat/laporan', [
+        \App\Http\Controllers\LaporanSampahController::class,
+        'store'
+    ])->name('masyarakat.laporan.store');
+
+    // Update Status Laporan oleh Petugas
+    Route::patch('/petugas/laporan/{laporan}/status', [
+        \App\Http\Controllers\LaporanSampahController::class,
+        'updateStatus'
+    ])->name('petugas.laporan.update-status');
 
     // Dashboard Petugas
     Route::get('/petugas/dashboard', function () {
