@@ -596,8 +596,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
 
+            /*
+             * URL DETAIL ADMIN
+             * Contoh:
+             * http://127.0.0.1:8000/admin/laporan/42
+             */
             const detailUrl =
-                `/admin/laporan/${laporan.id}`;
+                `${window.location.origin}/admin/laporan/${laporan.id}`;
 
 
             const namaKategori =
@@ -630,14 +635,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             ${laporan.judul_laporan}
                         </h6>
 
-                        <span class="badge"
-                              style="
+                        <span
+                            class="badge"
+                            style="
                                 background-color:${markerColor};
                                 font-size:0.65rem;
-                              ">
-
+                            "
+                        >
                             ${formattedStatus}
-
                         </span>
 
                     </div>
@@ -660,13 +665,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     </p>
 
 
-                    <a href="${detailUrl}"
-                       class="btn btn-sm btn-outline-primary
-                              w-100 rounded-pill mt-1">
-
+                    <!-- TOMBOL DETAIL -->
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary
+                               w-100 rounded-pill mt-1"
+                        style="
+                            cursor:pointer;
+                            position:relative;
+                            z-index:99999;
+                            pointer-events:auto;
+                        "
+                        onclick="window.location.href='${detailUrl}';"
+                    >
                         Lihat Detail
-
-                    </a>
+                    </button>
 
                 </div>
 

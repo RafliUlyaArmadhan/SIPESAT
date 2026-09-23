@@ -7,19 +7,37 @@ use App\Models\Penugasan;
 use App\Models\DokumentasiPenanganan;
 use App\Models\LaporanStatusHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class TugasController extends Controller
 {
     /**
      * Tugas Saya
-     * Sengaja dikosongkan untuk sementara.
+     * Menampilkan semua tugas milik petugas yang sedang login.
      */
     public function index()
     {
-        $penugasans = Penugasan::where('id', 0)
-            ->paginate(15);
+        $petugas = auth()->user()->petugas;
 
-        return view('petugas.tugas.index', compact('penugasans'));
+        if (!$petugas) {
+            $penugasans = collect();
+        } else {
+            $penugasans = Penugasan::with([
+                'laporanSampah.user',
+                'laporanSampah.kategoriSampah',
+                'laporanSampah.kecamatan',
+                'laporanSampah.desa',
+                'laporanSampah.dokumentasiPenanganan'
+            ])
+            ->where('petugas_id', $petugas->id)
+            ->latest('updated_at')
+            ->paginate(15);
+        }
+
+        return view(
+            'petugas.tugas.index',
+            compact('penugasans')
+        );
     }
 
 
@@ -40,7 +58,10 @@ class TugasController extends Controller
         ->where('petugas_id', $petugas->id)
         ->findOrFail($id);
 
-        return view('petugas.tugas.show', compact('penugasan'));
+        return view(
+            'petugas.tugas.show',
+            compact('penugasan')
+        );
     }
 
 
@@ -58,8 +79,10 @@ class TugasController extends Controller
 
         $petugas = auth()->user()->petugas;
 
-        $penugasan = Penugasan::where('petugas_id', $petugas->id)
-            ->findOrFail($id);
+        $penugasan = Penugasan::where(
+            'petugas_id',
+            $petugas->id
+        )->findOrFail($id);
 
         $laporan = $penugasan->laporanSampah;
 
@@ -82,29 +105,46 @@ class TugasController extends Controller
 
                 if (!empty($dokumentasi->foto_sebelum)) {
 
-                    foreach ((array) $dokumentasi->foto_sebelum as $oldFoto) {
+                    foreach (
+                        (array) $dokumentasi->foto_sebelum
+                        as $oldFoto
+                    ) {
 
-                        $oldPath = public_path('uploads/' . $oldFoto);
+                        $oldPath = public_path(
+                            'uploads/' . $oldFoto
+                        );
 
-                        if (\Illuminate\Support\Facades\File::exists($oldPath)) {
-                            \Illuminate\Support\Facades\File::delete($oldPath);
+                        if (File::exists($oldPath)) {
+                            File::delete($oldPath);
                         }
                     }
                 }
 
                 $paths = [];
 
-                foreach ($request->file('foto_sebelum') as $file) {
+                foreach (
+                    $request->file('foto_sebelum')
+                    as $file
+                ) {
 
-                    $imageName = 'sebelum_' . time() . '_' . uniqid()
-                        . '.' . $file->extension();
+                    $imageName =
+                        'sebelum_' .
+                        time() .
+                        '_' .
+                        uniqid() .
+                        '.' .
+                        $file->extension();
 
                     $file->move(
-                        public_path('uploads/dokumentasi_sebelum'),
+                        public_path(
+                            'uploads/dokumentasi_sebelum'
+                        ),
                         $imageName
                     );
 
-                    $paths[] = 'dokumentasi_sebelum/' . $imageName;
+                    $paths[] =
+                        'dokumentasi_sebelum/' .
+                        $imageName;
                 }
 
                 $dokumentasi->foto_sebelum = $paths;
@@ -122,20 +162,25 @@ class TugasController extends Controller
                 'changed_by' => auth()->id(),
                 'status_sebelum' => 'diverifikasi',
                 'status_sesudah' => 'sedang_ditangani',
-                'keterangan' => 'Petugas telah mulai menangani.'
+                'keterangan' =>
+                    'Petugas telah mulai menangani.'
             ]);
 
             logActivity(
                 'Mulai menangani laporan',
                 'Penanganan',
-                'Laporan "' . $laporan->kode_laporan . '" mulai ditangani.',
+                'Laporan "' .
+                    $laporan->kode_laporan .
+                    '" mulai ditangani.',
                 auth()->id()
             );
 
-            return redirect()->back()->with(
-                'success',
-                'Status diupdate menjadi sedang ditangani.'
-            );
+            return redirect()
+                ->back()
+                ->with(
+                    'success',
+                    'Status diupdate menjadi sedang ditangani.'
+                );
         }
 
 
@@ -151,35 +196,53 @@ class TugasController extends Controller
 
                 if (!empty($dokumentasi->foto_sesudah)) {
 
-                    foreach ((array) $dokumentasi->foto_sesudah as $oldFoto) {
+                    foreach (
+                        (array) $dokumentasi->foto_sesudah
+                        as $oldFoto
+                    ) {
 
-                        $oldPath = public_path('uploads/' . $oldFoto);
+                        $oldPath = public_path(
+                            'uploads/' . $oldFoto
+                        );
 
-                        if (\Illuminate\Support\Facades\File::exists($oldPath)) {
-                            \Illuminate\Support\Facades\File::delete($oldPath);
+                        if (File::exists($oldPath)) {
+                            File::delete($oldPath);
                         }
                     }
                 }
 
                 $paths = [];
 
-                foreach ($request->file('foto_sesudah') as $file) {
+                foreach (
+                    $request->file('foto_sesudah')
+                    as $file
+                ) {
 
-                    $imageName = 'sesudah_' . time() . '_' . uniqid()
-                        . '.' . $file->extension();
+                    $imageName =
+                        'sesudah_' .
+                        time() .
+                        '_' .
+                        uniqid() .
+                        '.' .
+                        $file->extension();
 
                     $file->move(
-                        public_path('uploads/dokumentasi_sesudah'),
+                        public_path(
+                            'uploads/dokumentasi_sesudah'
+                        ),
                         $imageName
                     );
 
-                    $paths[] = 'dokumentasi_sesudah/' . $imageName;
+                    $paths[] =
+                        'dokumentasi_sesudah/' .
+                        $imageName;
                 }
 
                 $dokumentasi->foto_sesudah = $paths;
             }
 
             $dokumentasi->waktu_selesai = now();
+
             $dokumentasi->catatan_pekerjaan =
                 $request->catatan_pekerjaan;
 
@@ -194,20 +257,25 @@ class TugasController extends Controller
                 'changed_by' => auth()->id(),
                 'status_sebelum' => 'sedang_ditangani',
                 'status_sesudah' => 'menunggu_validasi_akhir',
-                'keterangan' => 'Petugas telah selesai menangani.'
+                'keterangan' =>
+                    'Petugas telah selesai menangani.'
             ]);
 
             logActivity(
                 'Selesaikan penanganan',
                 'Penanganan',
-                'Laporan "' . $laporan->kode_laporan . '" selesai ditangani.',
+                'Laporan "' .
+                    $laporan->kode_laporan .
+                    '" selesai ditangani.',
                 auth()->id()
             );
 
-            return redirect()->back()->with(
-                'success',
-                'Status diupdate menjadi menunggu validasi akhir.'
-            );
+            return redirect()
+                ->back()
+                ->with(
+                    'success',
+                    'Status diupdate menjadi menunggu validasi akhir.'
+                );
         }
     }
 }

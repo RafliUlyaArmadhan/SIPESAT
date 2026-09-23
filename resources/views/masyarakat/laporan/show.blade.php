@@ -144,7 +144,10 @@
         color: #1f6e43;
     }
 
-    /* FOTO */
+    /* =========================================================
+       FOTO
+       ========================================================= */
+
     .foto-laporan {
         width: 220px;
         height: 125px;
@@ -180,7 +183,10 @@
         font-size: 11px;
     }
 
-    /* MAP */
+    /* =========================================================
+       MAP
+       ========================================================= */
+
     .map-wrapper {
         height: 220px;
         width: 100%;
@@ -194,7 +200,10 @@
         height: 100%;
     }
 
-    /* HISTORY */
+    /* =========================================================
+       HISTORY
+       ========================================================= */
+
     .history-title {
         font-size: 13px;
         font-weight: 700;
@@ -249,7 +258,10 @@
         margin-top: 3px;
     }
 
-    /* RATING */
+    /* =========================================================
+       RATING
+       ========================================================= */
+
     .rating-title {
         font-size: 15px;
         font-weight: 700;
@@ -263,10 +275,12 @@
         margin-bottom: 15px;
     }
 
+    /* BINTANG NORMAL: 1 2 3 4 5 */
     .rating-stars {
         display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
         gap: 3px;
         margin-bottom: 15px;
     }
@@ -281,14 +295,12 @@
         cursor: pointer;
         transition: .15s;
         line-height: 1;
+        margin: 0;
     }
 
     .rating-stars label:hover,
-    .rating-stars label:hover ~ label {
-        color: #ffc107;
-    }
-
-    .rating-stars input:checked ~ label {
+    .rating-stars label.hovered,
+    .rating-stars label.active {
         color: #ffc107;
     }
 
@@ -317,7 +329,10 @@
         font-size: 12px;
     }
 
-    /* POPUP FOTO */
+    /* =========================================================
+       POPUP FOTO
+       ========================================================= */
+
     .foto-modal {
         display: none;
         position: fixed;
@@ -326,12 +341,12 @@
         background: rgba(0, 0, 0, .82);
         align-items: center;
         justify-content: center;
-        padding: 25px;
+        padding: 15px;
     }
 
     .foto-modal img {
-        width: min(900px, 90vw);
-        max-height: 90vh;
+        width: min(1100px, 96vw);
+        max-height: 94vh;
         height: auto;
         object-fit: contain;
         display: block;
@@ -347,9 +362,13 @@
         font-size: 42px;
         line-height: 1;
         cursor: pointer;
+        z-index: 100000;
     }
 
-    /* POPUP MESSAGE */
+    /* =========================================================
+       POPUP MESSAGE
+       ========================================================= */
+
     .flash-popup {
         position: fixed;
         top: 20px;
@@ -373,6 +392,7 @@
     }
 
     @media (max-width: 768px) {
+
         .detail-grid {
             grid-template-columns: 1fr;
         }
@@ -387,6 +407,17 @@
         .foto-empty {
             width: 100%;
             max-width: 300px;
+        }
+
+        .foto-modal img {
+            width: 96vw;
+            max-width: 96vw;
+            max-height: 90vh;
+        }
+
+        .foto-close {
+            top: 10px;
+            right: 15px;
         }
     }
 </style>
@@ -453,9 +484,9 @@
 
     <div class="detail-grid">
 
-        {{-- =========================
+        {{-- =========================================================
              BAGIAN DETAIL LAPORAN
-        ========================== --}}
+        ========================================================== --}}
         <div>
 
             <div class="detail-card">
@@ -464,6 +495,7 @@
                 <div class="laporan-title">
                     {{ $laporan->judul_laporan ?? '-' }}
                 </div>
+
 
                 {{-- KODE + TANGGAL --}}
                 <div class="laporan-meta">
@@ -520,10 +552,12 @@
                     }
 
                     $fotoPertama = $foto[0] ?? null;
+
                     $fotoUrl = $fotoPertama
                         ? asset('uploads/' . $fotoPertama)
                         : null;
                 @endphp
+
 
                 @if($fotoUrl)
 
@@ -531,7 +565,7 @@
                         src="{{ $fotoUrl }}"
                         alt="Foto Laporan"
                         class="foto-laporan"
-                        onclick="bukaFoto('{{ $fotoUrl }}')"
+                        onclick="bukaFoto(@js($fotoUrl))"
                         title="Klik untuk melihat gambar lebih besar"
                     >
 
@@ -549,7 +583,10 @@
 
 
                 {{-- LOKASI --}}
-                <div class="label" style="margin-top: 18px;">
+                <div
+                    class="label"
+                    style="margin-top: 18px;"
+                >
                     Lokasi Peta
                 </div>
 
@@ -560,9 +597,10 @@
             </div>
 
 
-            {{-- =========================
+            {{-- =====================================================
                  RATING
-            ========================== --}}
+            ====================================================== --}}
+
             @if($status === 'selesai')
 
                 <div class="rating-card">
@@ -570,6 +608,7 @@
                     @if(isset($rating) && $rating)
 
                         {{-- SUDAH RATING --}}
+
                         <div class="rating-title">
                             Rating Laporan
                         </div>
@@ -578,36 +617,56 @@
                             Anda sudah memberikan rating untuk laporan ini.
                         </div>
 
+
                         <div
                             class="rating-stars"
-                            style="flex-direction: row; justify-content: flex-start;"
+                            style="
+                                flex-direction: row;
+                                justify-content: flex-start;
+                                pointer-events: none;
+                            "
                         >
 
                             @for($i = 1; $i <= 5; $i++)
 
-                                <span style="
-                                    font-size: 36px;
-                                    line-height: 1;
-                                    color: {{ $i <= $rating->rating ? '#ffc107' : '#d7d7d7' }};
-                                ">★</span>
+                                <span
+                                    style="
+                                        font-size: 36px;
+                                        line-height: 1;
+                                        color: {{ $i <= $rating->rating ? '#ffc107' : '#d7d7d7' }};
+                                    "
+                                >
+                                    ★
+                                </span>
 
                             @endfor
 
                         </div>
 
+
                         @if($rating->komentar)
-                            <div style="font-size: 11px; color: #666;">
+
+                            <div
+                                style="
+                                    font-size: 11px;
+                                    color: #666;
+                                    margin-bottom: 12px;
+                                "
+                            >
                                 "{{ $rating->komentar }}"
                             </div>
+
                         @endif
 
-                        <div class="rating-done" style="margin-top: 12px;">
+
+                        <div class="rating-done">
                             Rating sudah tersimpan.
                         </div>
 
                     @else
 
                         {{-- BELUM RATING --}}
+
                         <div class="rating-title">
                             Beri Rating
                         </div>
@@ -616,13 +675,18 @@
                             Laporan sudah selesai. Silakan berikan penilaian.
                         </div>
 
+
                         <form
                             action="{{ route('masyarakat.laporan.rating', $laporan->id) }}"
                             method="POST"
                         >
                             @csrf
 
-                            <div class="rating-stars">
+
+                            <div
+                                class="rating-stars"
+                                id="ratingStars"
+                            >
 
                                 @for($i = 1; $i <= 5; $i++)
 
@@ -631,11 +695,13 @@
                                         name="rating"
                                         id="star{{ $laporan->id }}_{{ $i }}"
                                         value="{{ $i }}"
+                                        {{ old('rating') == $i ? 'checked' : '' }}
                                         required
                                     >
 
                                     <label
                                         for="star{{ $laporan->id }}_{{ $i }}"
+                                        data-value="{{ $i }}"
                                         title="{{ $i }} bintang"
                                     >
                                         ★
@@ -645,11 +711,13 @@
 
                             </div>
 
+
                             <textarea
                                 name="komentar"
                                 class="rating-comment"
                                 placeholder="Komentar (opsional)..."
-                            ></textarea>
+                            >{{ old('komentar') }}</textarea>
+
 
                             <button
                                 type="submit"
@@ -669,16 +737,19 @@
         </div>
 
 
-        {{-- =========================
+        {{-- =========================================================
              RIWAYAT STATUS
-        ========================== --}}
+        ========================================================== --}}
+
         <div class="history-card">
 
             <div class="history-title">
                 Riwayat Status
             </div>
 
+
             {{-- MENUNGGU VERIFIKASI --}}
+
             <div class="history-item">
 
                 <span class="history-dot"></span>
@@ -698,9 +769,16 @@
 
 
             {{-- DIVERIFIKASI --}}
+
             <div class="history-item">
 
-                <span class="history-dot {{ $status === 'menunggu_verifikasi' ? 'inactive' : '' }}"></span>
+                <span
+                    class="history-dot {{
+                        $status === 'menunggu_verifikasi'
+                            ? 'inactive'
+                            : ''
+                    }}"
+                ></span>
 
                 <div class="history-status">
                     Diverifikasi
@@ -710,9 +788,23 @@
 
 
             {{-- SEDANG DITANGANI --}}
+
             <div class="history-item">
 
-                <span class="history-dot {{ !in_array($status, ['sedang_ditangani', 'menunggu_validasi_akhir', 'selesai']) ? 'inactive' : '' }}"></span>
+                <span
+                    class="history-dot {{
+                        !in_array(
+                            $status,
+                            [
+                                'sedang_ditangani',
+                                'menunggu_validasi_akhir',
+                                'selesai'
+                            ]
+                        )
+                            ? 'inactive'
+                            : ''
+                    }}"
+                ></span>
 
                 <div class="history-status">
                     Sedang Ditangani
@@ -722,9 +814,22 @@
 
 
             {{-- MENUNGGU VALIDASI --}}
+
             <div class="history-item">
 
-                <span class="history-dot {{ !in_array($status, ['menunggu_validasi_akhir', 'selesai']) ? 'inactive' : '' }}"></span>
+                <span
+                    class="history-dot {{
+                        !in_array(
+                            $status,
+                            [
+                                'menunggu_validasi_akhir',
+                                'selesai'
+                            ]
+                        )
+                            ? 'inactive'
+                            : ''
+                    }}"
+                ></span>
 
                 <div class="history-status">
                     Menunggu Validasi
@@ -734,18 +839,27 @@
 
 
             {{-- SELESAI --}}
+
             <div class="history-item">
 
-                <span class="history-dot {{ $status !== 'selesai' ? 'inactive' : '' }}"></span>
+                <span
+                    class="history-dot {{
+                        $status !== 'selesai'
+                            ? 'inactive'
+                            : ''
+                    }}"
+                ></span>
 
                 <div class="history-status">
                     Selesai
                 </div>
 
                 @if($status === 'selesai')
+
                     <div class="history-note">
                         Laporan telah selesai dan divalidasi Admin.
                     </div>
+
                 @endif
 
             </div>
@@ -757,33 +871,38 @@
 </div>
 
 
-{{-- =========================
+{{-- =============================================================
      POPUP FOTO
-========================= --}}
+============================================================= --}}
+
 <div
     id="fotoModal"
     class="foto-modal"
     onclick="tutupFoto()"
 >
+
     <span
         class="foto-close"
-        onclick="tutupFoto()"
+        onclick="event.stopPropagation(); tutupFoto();"
     >
         &times;
     </span>
+
 
     <img
         id="fotoModalImage"
         src=""
         alt="Foto Laporan"
-        onclick="event.stopPropagation()"
+        onclick="event.stopPropagation();"
     >
+
 </div>
 
 
-{{-- =========================
+{{-- =============================================================
      LEAFLET
-========================= --}}
+============================================================= --}}
+
 <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -791,60 +910,245 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+
 <script>
 
-    /* =========================
-       POPUP FOTO
-    ========================= */
-
-    function bukaFoto(url) {
-        const modal = document.getElementById('fotoModal');
-        const image = document.getElementById('fotoModalImage');
-
-        image.src = url;
-        modal.style.display = 'flex';
-    }
-
-    function tutupFoto() {
-        const modal = document.getElementById('fotoModal');
-        const image = document.getElementById('fotoModalImage');
-
-        modal.style.display = 'none';
-        image.src = '';
-    }
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            tutupFoto();
-        }
-    });
-
-
-    /* =========================
-       LEAFLET
-    ========================= */
+    /* =========================================================
+       RATING BINTANG
+       ========================================================= */
 
     document.addEventListener('DOMContentLoaded', function () {
 
-        const latitude = {{ $laporan->latitude ?? -7.6531 }};
-        const longitude = {{ $laporan->longitude ?? 111.3284 }};
+        const ratingStars = document.getElementById('ratingStars');
 
-        const map = L.map('map').setView(
-            [latitude, longitude],
-            15
-        );
+        if (ratingStars) {
+
+            const inputs = ratingStars.querySelectorAll(
+                'input[name="rating"]'
+            );
+
+            const labels = ratingStars.querySelectorAll(
+                'label'
+            );
+
+
+            /*
+             * Warnai bintang sesuai nilai yang dipilih.
+             */
+            function tampilkanRating(nilai) {
+
+                labels.forEach(function (label) {
+
+                    const value = parseInt(
+                        label.dataset.value
+                    );
+
+                    if (value <= nilai) {
+
+                        label.classList.add('active');
+
+                    } else {
+
+                        label.classList.remove('active');
+
+                    }
+
+                });
+
+            }
+
+
+            /*
+             * Klik bintang.
+             */
+            inputs.forEach(function (input) {
+
+                input.addEventListener('change', function () {
+
+                    const nilai = parseInt(
+                        this.value
+                    );
+
+                    tampilkanRating(nilai);
+
+                });
+
+            });
+
+
+            /*
+             * Efek saat mouse diarahkan ke bintang.
+             */
+            labels.forEach(function (label) {
+
+                label.addEventListener('mouseenter', function () {
+
+                    const nilai = parseInt(
+                        this.dataset.value
+                    );
+
+                    labels.forEach(function (item) {
+
+                        const value = parseInt(
+                            item.dataset.value
+                        );
+
+                        if (value <= nilai) {
+
+                            item.classList.add('hovered');
+
+                        } else {
+
+                            item.classList.remove('hovered');
+
+                        }
+
+                    });
+
+                });
+
+
+                label.addEventListener('mouseleave', function () {
+
+                    labels.forEach(function (item) {
+
+                        item.classList.remove('hovered');
+
+                    });
+
+
+                    const selected =
+                        ratingStars.querySelector(
+                            'input[name="rating"]:checked'
+                        );
+
+
+                    if (selected) {
+
+                        tampilkanRating(
+                            parseInt(selected.value)
+                        );
+
+                    } else {
+
+                        labels.forEach(function (item) {
+
+                            item.classList.remove('active');
+
+                        });
+
+                    }
+
+                });
+
+            });
+
+
+            /*
+             * Kalau sebelumnya ada old('rating'),
+             * tampilkan kembali pilihan tersebut.
+             */
+            const selected =
+                ratingStars.querySelector(
+                    'input[name="rating"]:checked'
+                );
+
+
+            if (selected) {
+
+                tampilkanRating(
+                    parseInt(selected.value)
+                );
+
+            }
+
+        }
+
+    });
+
+
+    /* =========================================================
+       POPUP FOTO
+       ========================================================= */
+
+    function bukaFoto(url) {
+
+        const modal =
+            document.getElementById('fotoModal');
+
+        const image =
+            document.getElementById('fotoModalImage');
+
+
+        image.src = url;
+
+        modal.style.display = 'flex';
+
+    }
+
+
+    function tutupFoto() {
+
+        const modal =
+            document.getElementById('fotoModal');
+
+        const image =
+            document.getElementById('fotoModalImage');
+
+
+        modal.style.display = 'none';
+
+        image.src = '';
+
+    }
+
+
+    document.addEventListener('keydown', function(event) {
+
+        if (event.key === 'Escape') {
+
+            tutupFoto();
+
+        }
+
+    });
+
+
+    /* =========================================================
+       LEAFLET
+       ========================================================= */
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const latitude =
+            {{ $laporan->latitude ?? -7.6531 }};
+
+        const longitude =
+            {{ $laporan->longitude ?? 111.3284 }};
+
+
+        const map =
+            L.map('map').setView(
+                [latitude, longitude],
+                15
+            );
+
 
         L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-                attribution: '&copy; OpenStreetMap contributors'
+                attribution:
+                    '&copy; OpenStreetMap contributors'
             }
         ).addTo(map);
 
-        const marker = L.marker([
-            latitude,
-            longitude
-        ]).addTo(map);
+
+        const marker =
+            L.marker([
+                latitude,
+                longitude
+            ]).addTo(map);
+
 
         marker.bindPopup(`
             <div style="font-size:11px;">
@@ -856,21 +1160,30 @@
     });
 
 
-    /* =========================
+    /* =========================================================
        POPUP MESSAGE
-    ========================= */
+       ========================================================= */
 
     setTimeout(function () {
 
-        const successPopup = document.getElementById('successPopup');
-        const errorPopup = document.getElementById('errorPopup');
+        const successPopup =
+            document.getElementById('successPopup');
+
+        const errorPopup =
+            document.getElementById('errorPopup');
+
 
         if (successPopup) {
+
             successPopup.style.display = 'none';
+
         }
 
+
         if (errorPopup) {
+
             errorPopup.style.display = 'none';
+
         }
 
     }, 4000);

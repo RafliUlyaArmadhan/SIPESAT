@@ -220,7 +220,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             );
 
 
-            // ⭐ ROUTE RATING
+            // Route Rating
             Route::post(
                 '/laporan/{laporan}/rating',
                 [MasyarakatLaporanController::class, 'storeRating']
@@ -287,6 +287,13 @@ Route::middleware(['auth', 'active'])->group(function () {
                 'laporan/{laporan}/tugaskan',
                 [AdminLaporanController::class, 'tugaskan']
             )->name('laporan.tugaskan');
+
+
+            // Ganti petugas
+            Route::post(
+                'laporan/{laporan}/ganti-petugas',
+                [AdminLaporanController::class, 'gantiPetugas']
+            )->name('laporan.ganti-petugas');
 
 
             // Validasi akhir

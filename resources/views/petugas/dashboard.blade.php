@@ -5,80 +5,161 @@
 @section('content')
 
 <style>
+    /* =========================================================
+       DASHBOARD PETUGAS
+    ========================================================= */
+
     .petugas-dashboard {
-        font-size: 13px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4px 0 20px;
+    }
+
+    .dashboard-header {
+        margin-bottom: 20px;
+    }
+
+    .dashboard-header h4 {
+        margin: 0 0 4px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2a24;
+    }
+
+    .dashboard-header p {
+        margin: 0;
+        font-size: 12px;
+        color: #777;
+    }
+
+
+    /* =========================================================
+       STATISTIK
+    ========================================================= */
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
     }
 
     .stat-card {
-        background: white;
-        border: 1px solid #e5e5e5;
-        border-radius: 6px;
-        padding: 13px;
-        text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,.08);
-        text-decoration: none;
-        display: block;
-        transition: .2s;
-    }
+        background: #fff;
+        border: 1px solid #e7e7e7;
+        border-radius: 10px;
+        padding: 15px 16px;
+        box-shadow: 0 2px 7px rgba(0, 0, 0, .05);
 
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,.12);
-    }
-
-    .stat-number {
-        font-size: 18px;
-        font-weight: 700;
-        margin-bottom: 2px;
-    }
-
-    .stat-label {
-        color: #777;
-        font-size: 10px;
-    }
-
-    .task-card {
-        background: white;
-        border: 1px solid #e5e5e5;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0,0,0,.08);
-        overflow: hidden;
-    }
-
-    .task-header {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    .task-header h6 {
-        font-size: 12px;
+    .stat-label {
+        font-size: 11px;
+        color: #777;
+        margin-bottom: 4px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+        line-height: 1;
         font-weight: 700;
+        color: #1f2a24;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 17px;
+    }
+
+    .stat-new .stat-icon {
+        background: #fff3cd;
+        color: #b88600;
+    }
+
+    .stat-process .stat-icon {
+        background: #e7f0ff;
+        color: #0d6efd;
+    }
+
+    .stat-done .stat-icon {
+        background: #e8f5ee;
+        color: #198754;
+    }
+
+
+    /* =========================================================
+       SECTION
+    ========================================================= */
+
+    .dashboard-section {
+        background: #fff;
+        border: 1px solid #e6e6e6;
+        border-radius: 10px;
+        box-shadow: 0 2px 7px rgba(0, 0, 0, .05);
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 14px 16px;
+        border-bottom: 1px solid #ededed;
+    }
+
+    .section-title {
         margin: 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2a24;
+
+        display: flex;
+        align-items: center;
+        gap: 7px;
     }
 
-    .btn-semua {
-        font-size: 9px;
-        padding: 3px 7px;
-        border: 1px solid #aaa;
-        color: #555;
-        border-radius: 3px;
-        text-decoration: none;
+    .section-title i {
+        color: #1f6e43;
+        font-size: 13px;
     }
 
-    .btn-semua:hover {
-        background: #f5f5f5;
+    .section-action {
+        font-size: 11px;
+        color: #1f6e43;
+        font-weight: 600;
     }
+
+    .section-action:hover {
+        color: #14532d;
+    }
+
+
+    /* =========================================================
+       TUGAS
+    ========================================================= */
 
     .task-item {
         display: block;
-        padding: 9px 12px;
-        border-bottom: 1px solid #eee;
         text-decoration: none;
-        color: #222;
-        transition: .15s;
+        color: inherit;
+
+        border-bottom: 1px solid #f0f0f0;
+
+        transition:
+            background-color .18s ease,
+            transform .18s ease;
     }
 
     .task-item:last-child {
@@ -86,165 +167,365 @@
     }
 
     .task-item:hover {
-        background: #f7faf8;
+        background: #f8faf9;
+        color: inherit;
+    }
+
+    .task-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+
+        padding: 14px 16px;
+    }
+
+    .task-main {
+        min-width: 0;
+        flex: 1;
     }
 
     .task-title {
-        font-size: 10px;
-        font-weight: 600;
-        margin-bottom: 2px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 4px;
+        line-height: 1.4;
     }
 
     .task-description {
-        font-size: 8px;
+        font-size: 11px;
         color: #777;
-        margin-bottom: 4px;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+
+    .task-status {
+        display: inline-flex;
+        align-items: center;
+
+        padding: 4px 8px;
+        border-radius: 20px;
+
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .status-new {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-process {
+        background: #e7f0ff;
+        color: #0d5ec9;
+    }
+
+    .status-done {
+        background: #e8f5ee;
+        color: #198754;
+    }
+
+    .status-rejected {
+        background: #fdeaea;
+        color: #dc3545;
     }
 
     .task-time {
-        font-size: 8px;
-        color: #888;
-        white-space: nowrap;
-        margin-left: 15px;
-    }
-
-    .badge-tugas {
-        display: inline-block;
-        font-size: 7px;
-        padding: 3px 5px;
-        border-radius: 3px;
-        color: white;
-    }
-
-    .badge-baru {
-        background: #0d9fe8;
-    }
-
-    .badge-proses {
-        background: #198754;
-    }
-
-    .empty-task {
-        padding: 20px;
-        text-align: center;
-        color: #888;
         font-size: 10px;
+        color: #999;
+        white-space: nowrap;
+        padding-top: 2px;
+    }
+
+
+    /* =========================================================
+       RATING
+    ========================================================= */
+
+    .rating-item {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .rating-item:last-child {
+        border-bottom: none;
+    }
+
+    .rating-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+    .rating-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #333;
+        line-height: 1.4;
+    }
+
+    .rating-time {
+        font-size: 10px;
+        color: #999;
+        white-space: nowrap;
+    }
+
+    .rating-stars {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 5px;
+    }
+
+    .rating-stars span {
+        color: #ffc107;
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .rating-stars span.empty {
+        color: #ddd;
+    }
+
+    .rating-comment {
+        font-size: 11px;
+        color: #666;
+        line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    .empty-state {
+        padding: 25px 16px;
+        text-align: center;
+        color: #999;
+        font-size: 11px;
+    }
+
+    .empty-state i {
+        display: block;
+        font-size: 24px;
+        margin-bottom: 8px;
+        color: #ccc;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media (max-width: 768px) {
+
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .task-row {
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .task-time {
+            padding-top: 0;
+        }
+
+        .rating-top {
+            flex-direction: column;
+            gap: 3px;
+        }
     }
 </style>
 
+
 <div class="petugas-dashboard">
 
-    {{-- STATISTIK --}}
-    <div class="row g-2 mb-3">
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-        {{-- TUGAS BARU --}}
-        <div class="col-md-4">
-            <a href="{{ route('petugas.tugas.index') }}"
-               class="stat-card">
+    <div class="dashboard-header">
 
-                <div class="stat-number text-info">
-                    {{ $tugasBaru }}
-                </div>
+        <h4>
+            Dashboard Petugas
+        </h4>
+
+        <p>
+            Ringkasan tugas dan aktivitas penanganan laporan.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATISTIK
+    ====================================================== -->
+
+    <div class="stat-grid">
+
+        <!-- Tugas Baru -->
+        <div class="stat-card stat-new">
+
+            <div>
 
                 <div class="stat-label">
                     Tugas Baru
                 </div>
 
-            </a>
+                <div class="stat-number">
+                    {{ $tugasBaru }}
+                </div>
+
+            </div>
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+
         </div>
 
 
-        {{-- SEDANG DIKERJAKAN --}}
-        <div class="col-md-4">
-            <a href="{{ route('petugas.tugas.index') }}"
-               class="stat-card">
+        <!-- Sedang Dikerjakan -->
+        <div class="stat-card stat-process">
 
-                <div class="stat-number text-success">
-                    {{ $sedangDikerjakan }}
-                </div>
+            <div>
 
                 <div class="stat-label">
                     Sedang Dikerjakan
                 </div>
 
-            </a>
+                <div class="stat-number">
+                    {{ $sedangDikerjakan }}
+                </div>
+
+            </div>
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-broom"></i>
+            </div>
+
         </div>
 
 
-        {{-- SELESAI --}}
-        <div class="col-md-4">
-            <a href="{{ route('petugas.tugas.index') }}"
-               class="stat-card">
+        <!-- Selesai -->
+        <div class="stat-card stat-done">
 
-                <div class="stat-number text-success">
-                    {{ $selesai }}
-                </div>
+            <div>
 
                 <div class="stat-label">
                     Selesai
                 </div>
 
-            </a>
+                <div class="stat-number">
+                    {{ $selesai }}
+                </div>
+
+            </div>
+
+            <div class="stat-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
         </div>
 
     </div>
 
 
-    {{-- TUGAS TERBARU --}}
-    <div class="task-card">
+    <!-- =====================================================
+         TUGAS TERBARU
+    ====================================================== -->
 
-        <div class="task-header">
+    <div class="dashboard-section">
 
-            <h6>
+        <div class="section-header">
+
+            <h6 class="section-title">
+
+                <i class="fa-solid fa-list-check"></i>
+
                 Tugas Terbaru
+
             </h6>
 
-            <a href="{{ route('petugas.tugas.index') }}"
-               class="btn-semua">
+
+            <a
+                href="{{ route('petugas.tugas.index') }}"
+                class="section-action text-decoration-none"
+            >
                 Lihat Semua
             </a>
 
         </div>
 
 
-        @if(count($tugasTerbaru) > 0)
+        @if(!empty($tugasTerbaru))
 
             @foreach($tugasTerbaru as $tugas)
 
-                <a href="{{ route('petugas.tugas.show', $tugas['id']) }}"
-                   class="task-item">
+                @php
 
-                    <div class="d-flex justify-content-between">
+                    $statusClass = match ($tugas['status']) {
 
-                        <div>
+                        'Tugas Baru'
+                            => 'status-new',
+
+                        'Sedang Dikerjakan'
+                            => 'status-process',
+
+                        'Selesai'
+                            => 'status-done',
+
+                        'Ditolak'
+                            => 'status-rejected',
+
+                        default
+                            => 'status-new',
+
+                    };
+
+                @endphp
+
+
+                <!-- =================================================
+                     LAPORAN BISA DIKLIK
+                ================================================== -->
+
+                <a
+                    href="{{ route(
+                        'petugas.tugas.show',
+                        $tugas['id']
+                    ) }}"
+                    class="task-item"
+                >
+
+                    <div class="task-row">
+
+                        <div class="task-main">
 
                             <div class="task-title">
                                 {{ $tugas['judul'] }}
                             </div>
 
                             <div class="task-description">
-                                {{ $tugas['deskripsi'] }}
+                                {{ $tugas['deskripsi'] ?? '-' }}
                             </div>
 
-                            @if($tugas['status'] === 'Tugas Baru')
-
-                                <span class="badge-tugas badge-baru">
-                                    Tugas Baru
-                                </span>
-
-                            @elseif($tugas['status'] === 'Sedang Dikerjakan')
-
-                                <span class="badge-tugas badge-proses">
-                                    Sedang Dikerjakan
-                                </span>
-
-                            @endif
+                            <span
+                                class="task-status {{ $statusClass }}"
+                            >
+                                {{ $tugas['status'] }}
+                            </span>
 
                         </div>
 
-                        <span class="task-time">
+
+                        <div class="task-time">
                             {{ $tugas['waktu'] }}
-                        </span>
+                        </div>
 
                     </div>
 
@@ -254,8 +535,96 @@
 
         @else
 
-            <div class="empty-task">
-                Tidak ada tugas terbaru.
+            <div class="empty-state">
+
+                <i class="fa-regular fa-folder-open"></i>
+
+                Belum ada tugas.
+
+            </div>
+
+        @endif
+
+    </div>
+
+
+    <!-- =====================================================
+         RATING DARI MASYARAKAT
+    ====================================================== -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h6 class="section-title">
+
+                <i class="fa-solid fa-star"></i>
+
+                Rating dari Masyarakat
+
+            </h6>
+
+        </div>
+
+
+        @if(!empty($ratingTerbaru))
+
+            @foreach($ratingTerbaru as $rating)
+
+                <div class="rating-item">
+
+                    <div class="rating-top">
+
+                        <div class="rating-title">
+                            {{ $rating['judul'] }}
+                        </div>
+
+                        <div class="rating-time">
+                            {{ $rating['waktu'] }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="rating-stars">
+
+                        @for($i = 1; $i <= 5; $i++)
+
+                            @if($i <= $rating['rating'])
+
+                                <span>★</span>
+
+                            @else
+
+                                <span class="empty">★</span>
+
+                            @endif
+
+                        @endfor
+
+                    </div>
+
+
+                    @if(!empty($rating['komentar']))
+
+                        <div class="rating-comment">
+                            "{{ $rating['komentar'] }}"
+                        </div>
+
+                    @endif
+
+                </div>
+
+            @endforeach
+
+        @else
+
+            <div class="empty-state">
+
+                <i class="fa-regular fa-star"></i>
+
+                Belum ada rating dari masyarakat.
+
             </div>
 
         @endif
