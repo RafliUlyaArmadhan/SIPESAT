@@ -1,8 +1,23 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Admin')
+@section('title', 'Dashboard Petugas')
 
 @section('content')
+
+@php
+    use App\Models\LaporanSampah;
+
+    $laporanData = LaporanSampah::with('user', 'kategoriSampah')
+        ->latest()
+        ->get();
+
+    $jumlahMenunggu = $laporanData->where('status', 'menunggu_verifikasi')->count();
+    $jumlahDiproses = $laporanData->where('status', 'diproses')->count();
+    $jumlahSelesai = $laporanData->where('status', 'selesai')->count();
+    $jumlahDitolak = $laporanData->where('status', 'ditolak')->count();
+
+    $totalLaporan = $laporanData->count();
+@endphp
 
 <style>
     /* ==============================
@@ -12,6 +27,7 @@
     .dashboard-page {
         background: #F6F7F5;
         min-height: calc(100vh - 73px);
+        padding-bottom: 30px;
     }
 
     /* Card umum */
@@ -174,6 +190,131 @@
     }
 
     /* ==============================
+       DAFTAR LAPORAN
+       ============================== */
+
+    .laporan-section {
+        margin-top: 15px;
+    }
+
+    .laporan-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .laporan-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .laporan-table th {
+        background: #F6F7F5;
+        color: #374151;
+        font-weight: 700;
+        padding: 11px 12px;
+        border-bottom: 1px solid #E2E5E1;
+        white-space: nowrap;
+    }
+
+    .laporan-table td {
+        padding: 11px 12px;
+        border-bottom: 1px solid #E2E5E1;
+        vertical-align: middle;
+        color: #4B5563;
+    }
+
+    .laporan-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .kode-laporan {
+        font-weight: 700;
+        color: #1F6E43;
+    }
+
+    .judul-laporan {
+        font-weight: 600;
+        color: #1F2A24;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .badge-menunggu {
+        background: #FFF3CD;
+        color: #856404;
+    }
+
+    .badge-diproses {
+        background: #D1E7DD;
+        color: #0F5132;
+    }
+
+    .badge-selesai {
+        background: #D1E7DD;
+        color: #146C43;
+    }
+
+    .badge-ditolak {
+        background: #F8D7DA;
+        color: #842029;
+    }
+
+    .status-form {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        min-width: 220px;
+    }
+
+    .status-select {
+        border: 1px solid #D1D5DB;
+        border-radius: 5px;
+        padding: 6px 8px;
+        font-size: 12px;
+        background: white;
+        color: #374151;
+        flex: 1;
+    }
+
+    .btn-update-status {
+        border: none;
+        background: #1F6E43;
+        color: white;
+        border-radius: 5px;
+        padding: 7px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-update-status:hover {
+        background: #185936;
+    }
+
+    .empty-laporan {
+        text-align: center;
+        padding: 30px 15px;
+        color: #6B7280;
+    }
+
+    .alert-success-custom {
+        margin-bottom: 15px;
+        background: #D1E7DD;
+        color: #0F5132;
+        border: 1px solid #A3CFBB;
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    /* ==============================
        RESPONSIVE
        ============================== */
 
@@ -189,11 +330,23 @@
             flex-wrap: wrap;
         }
 
+        .status-form {
+            min-width: 200px;
+        }
     }
 </style>
 
 
 <div class="dashboard-page">
+
+    {{-- PESAN SUKSES --}}
+    @if(session('success'))
+        <div class="alert-success-custom">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
 
     {{-- ==========================================
          4 CARD STATUS LAPORAN
@@ -212,7 +365,7 @@
                     </div>
 
                     <div class="status-number">
-                        8
+                        {{ $jumlahMenunggu }}
                     </div>
                 </div>
 
@@ -241,7 +394,7 @@
                     <div class="status-number"
                          style="color: #1F6E43;">
 
-                        15
+                        {{ $jumlahDiproses }}
 
                     </div>
                 </div>
@@ -271,7 +424,7 @@
                     <div class="status-number"
                          style="color: #1F6E43;">
 
-                        5
+                        {{ $jumlahSelesai }}
 
                     </div>
                 </div>
@@ -301,7 +454,7 @@
                     <div class="status-number"
                          style="color: #DC3545;">
 
-                        2
+                        {{ $jumlahDitolak }}
 
                     </div>
                 </div>
@@ -359,7 +512,7 @@
                 <i class="fa-solid fa-file-lines summary-icon"></i>
 
                 <div class="summary-number">
-                    35
+                    {{ $totalLaporan }}
                 </div>
 
                 <div class="summary-title">
@@ -406,10 +559,9 @@
                 <i class="fa-solid fa-map-location-dot me-2"
                    style="color: #1F6E43;"></i>
 
-                Peta Sebaran Laporan (Live Map)
+                Peta Sebaran Laporan
 
             </div>
-
 
             <div class="map-status">
 
@@ -429,8 +581,194 @@
 
         </div>
 
-
         <div id="laporanMap"></div>
+
+    </div>
+
+
+    {{-- ==========================================
+         DAFTAR LAPORAN SAMPAH
+         ========================================== --}}
+
+    <div class="dashboard-card laporan-section">
+
+        <div class="card-header-custom">
+
+            <i class="fa-solid fa-list-check me-2"
+               style="color: #1F6E43;"></i>
+
+            Daftar Laporan Sampah
+
+        </div>
+
+
+        <div class="laporan-table-wrapper">
+
+            @if($laporanData->count() > 0)
+
+                <table class="laporan-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Laporan</th>
+                            <th>Pelapor</th>
+                            <th>Judul</th>
+                            <th>Lokasi</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach($laporanData as $index => $laporan)
+
+                            <tr>
+
+                                <td>
+                                    {{ $index + 1 }}
+                                </td>
+
+                                <td>
+                                    <div class="kode-laporan">
+                                        {{ $laporan->kode_laporan }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ $laporan->user->name ?? '-' }}
+                                </td>
+
+                                <td>
+                                    <div class="judul-laporan">
+                                        {{ $laporan->judul_laporan }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ $laporan->alamat_lengkap }}
+                                </td>
+
+                                <td>
+
+                                    @if($laporan->status === 'menunggu_verifikasi')
+
+                                        <span class="status-badge badge-menunggu">
+                                            Menunggu Verifikasi
+                                        </span>
+
+                                    @elseif($laporan->status === 'diproses')
+
+                                        <span class="status-badge badge-diproses">
+                                            Sedang Diproses
+                                        </span>
+
+                                    @elseif($laporan->status === 'selesai')
+
+                                        <span class="status-badge badge-selesai">
+                                            Selesai
+                                        </span>
+
+                                    @elseif($laporan->status === 'ditolak')
+
+                                        <span class="status-badge badge-ditolak">
+                                            Ditolak
+                                        </span>
+
+                                    @else
+
+                                        <span class="status-badge">
+                                            {{ $laporan->status }}
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                                <td>
+
+                                    <form
+                                        action="{{ route('petugas.laporan.update-status', $laporan->id) }}"
+                                        method="POST"
+                                        class="status-form"
+                                    >
+
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <select
+                                            name="status"
+                                            class="status-select"
+                                        >
+
+                                            <option
+                                                value="menunggu_verifikasi"
+                                                {{ $laporan->status === 'menunggu_verifikasi' ? 'selected' : '' }}
+                                            >
+                                                Menunggu Verifikasi
+                                            </option>
+
+                                            <option
+                                                value="diproses"
+                                                {{ $laporan->status === 'diproses' ? 'selected' : '' }}
+                                            >
+                                                Diproses
+                                            </option>
+
+                                            <option
+                                                value="selesai"
+                                                {{ $laporan->status === 'selesai' ? 'selected' : '' }}
+                                            >
+                                                Selesai
+                                            </option>
+
+                                            <option
+                                                value="ditolak"
+                                                {{ $laporan->status === 'ditolak' ? 'selected' : '' }}
+                                            >
+                                                Ditolak
+                                            </option>
+
+                                        </select>
+
+                                        <button
+                                            type="submit"
+                                            class="btn-update-status"
+                                        >
+                                            Update
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+
+                        @endforeach
+
+                    </tbody>
+
+                </table>
+
+            @else
+
+                <div class="empty-laporan">
+
+                    <i class="fa-solid fa-inbox"
+                       style="font-size: 30px; margin-bottom: 10px;"></i>
+
+                    <div>
+                        Belum ada laporan sampah.
+                    </div>
+
+                </div>
+
+            @endif
+
+        </div>
 
     </div>
 
@@ -442,7 +780,6 @@
      ========================================== --}}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 
 <script>
 
@@ -539,39 +876,38 @@
 
 
     /*
-     * Data sementara untuk menampilkan
-     * posisi marker seperti desain Figma.
-     *
-     * Nanti data ini akan kita ambil
-     * dari database laporan.
+     * Data laporan dari database.
      */
 
-    const laporan = [
-
-        [-7.654, 111.335, 'green'],
-        [-7.660, 111.340, 'yellow'],
-        [-7.648, 111.325, 'red'],
-        [-7.670, 111.350, 'green'],
-        [-7.640, 111.315, 'yellow'],
-        [-7.650, 111.345, 'red'],
-        [-7.675, 111.325, 'yellow'],
-        [-7.665, 111.315, 'green'],
-        [-7.645, 111.350, 'red'],
-        [-7.635, 111.340, 'yellow']
-
-    ];
+    const laporan = @json(
+        $laporanData
+            ->filter(function ($item) {
+                return $item->latitude !== null && $item->longitude !== null;
+            })
+            ->map(function ($item) {
+                return [
+                    'latitude' => (float) $item->latitude,
+                    'longitude' => (float) $item->longitude,
+                    'status' => $item->status,
+                    'kode' => $item->kode_laporan,
+                    'judul' => $item->judul_laporan,
+                    'alamat' => $item->alamat_lengkap,
+                ];
+            })
+            ->values()
+    );
 
 
     laporan.forEach(function(item) {
 
-        let warna = '#198754';
+        let warna = '#DC3545';
 
-        if (item[2] === 'yellow') {
+        if (item.status === 'diproses') {
             warna = '#F9B51E';
         }
 
-        if (item[2] === 'red') {
-            warna = '#DC3545';
+        if (item.status === 'selesai') {
+            warna = '#198754';
         }
 
 
@@ -598,9 +934,16 @@
 
 
         L.marker(
-            [item[0], item[1]],
+            [item.latitude, item.longitude],
             { icon: icon }
-        ).addTo(map);
+        )
+        .addTo(map)
+        .bindPopup(`
+            <strong>${item.kode}</strong><br>
+            ${item.judul}<br>
+            ${item.alamat}<br>
+            <strong>Status:</strong> ${item.status}
+        `);
 
     });
 
