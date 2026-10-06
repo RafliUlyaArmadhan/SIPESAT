@@ -17,7 +17,7 @@ use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\StatistikController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Petugas\TugasController;
-
+use App\Http\Controllers\Masyarakat\RatingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -219,6 +219,17 @@ Route::middleware(['auth', 'active'])->group(function () {
                 MasyarakatLaporanController::class
             );
 
+            // Rating Laporan
+            Route::get(
+                '/rating/{id}',
+                [RatingController::class, 'create']
+            )->name('rating.create');
+
+            Route::post(
+                '/rating/{id}',
+                [RatingController::class, 'store']
+            )->name('rating.store');
+
 
             // Route Rating
             Route::post(
@@ -391,6 +402,30 @@ Route::middleware(['auth', 'active'])->group(function () {
                 'tugas/{tugas}/update-status',
                 [TugasController::class, 'updateStatus']
             )->name('tugas.update-status');
+        Route::prefix('petugas')
+    ->middleware('role:petugas')
+    ->name('petugas.')
+    ->group(function () {
+
+        // Dashboard Petugas
+        Route::get(
+            '/dashboard',
+            [PetugasDashboard::class, 'index']
+        )->name('dashboard');
+
+        // Tugas
+        Route::resource(
+            'tugas',
+            TugasController::class
+        );
+
+        // Update status tugas
+        Route::post(
+            'tugas/{tugas}/update-status',
+            [TugasController::class, 'updateStatus']
+        )->name('tugas.update-status');
+
+    });
 
         });
 

@@ -1,734 +1,320 @@
 @extends('layouts.app')
-
 @section('title', 'Detail Laporan')
 
 @section('content')
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 
 <style>
-    .detail-page {
-        max-width: 950px;
-        margin: 0 auto;
-        font-size: 13px;
-    }
-
-    .back-link {
-        display: inline-block;
-        color: #777;
-        text-decoration: none;
-        font-size: 12px;
-        margin-bottom: 12px;
-    }
-
-    .back-link:hover {
-        color: #1f6e43;
-    }
-
-    .detail-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-    }
-
-    .detail-top h4 {
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0;
-        color: #1f2a24;
-    }
-
-    .status-badge {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 7px 13px;
-        border-radius: 20px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .status-menunggu {
-        background: #ffc107;
-        color: #222;
-    }
-
-    .status-diverifikasi {
-        background: #0dcaf0;
-        color: #222;
-    }
-
-    .status-proses {
-        background: #198754;
-        color: #fff;
-    }
-
-    .status-validasi {
-        background: #f0ad4e;
-        color: #fff;
-    }
-
-    .status-selesai {
-        background: #198754;
-        color: #fff;
-    }
-
-    .status-ditolak {
-        background: #dc3545;
-        color: #fff;
-    }
-
-    .detail-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 260px;
-        gap: 16px;
-        align-items: start;
-    }
-
-    .detail-card,
-    .history-card,
-    .rating-card {
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
-    }
-
-    .detail-card {
-        padding: 18px;
-    }
-
-    .history-card {
-        padding: 16px;
-    }
-
-    .rating-card {
-        margin-top: 16px;
-        padding: 18px;
-    }
-
-    .laporan-title {
-        font-size: 19px;
-        font-weight: 700;
-        color: #1f6e43;
-        margin-bottom: 5px;
-    }
-
-    .laporan-meta {
-        font-size: 11px;
-        color: #777;
-        margin-bottom: 18px;
-    }
-
-    .label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 6px;
-    }
-
-    .value {
-        font-size: 12px;
-        line-height: 1.6;
-        color: #333;
-        margin-bottom: 14px;
-    }
-
-    .kategori {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 600;
-    }
-
-    .kategori-icon {
-        color: #1f6e43;
-    }
-
-    /* =========================================================
-       FOTO
-       ========================================================= */
-
-    .foto-laporan {
-        width: 220px;
-        height: 125px;
-        object-fit: cover;
-        border-radius: 7px;
-        display: block;
-        border: 1px solid #ddd;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    .foto-laporan:hover {
-        opacity: .9;
-        transform: scale(1.02);
-    }
-
-    .foto-hint {
-        font-size: 10px;
-        color: #888;
-        margin-top: 6px;
-    }
-
-    .foto-empty {
-        width: 220px;
-        height: 125px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #ddd;
-        border-radius: 7px;
-        background: #f7f7f7;
-        color: #888;
-        font-size: 11px;
-    }
-
-    /* =========================================================
-       MAP
-       ========================================================= */
-
-    .map-wrapper {
-        height: 220px;
-        width: 100%;
-        border: 1px solid #ddd;
-        border-radius: 7px;
-        overflow: hidden;
-    }
-
-    #map {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* =========================================================
-       HISTORY
-       ========================================================= */
-
-    .history-title {
-        font-size: 13px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 15px;
-    }
-
-    .history-item {
+    .timeline {
         position: relative;
-        padding-left: 17px;
-        padding-bottom: 18px;
-        margin-left: 3px;
-        border-left: 1px solid #ddd;
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
     }
-
-    .history-item:last-child {
-        border-left: none;
-        padding-bottom: 0;
-    }
-
-    .history-dot {
+    .timeline::before {
+        content: '';
         position: absolute;
-        left: -5px;
-        top: 0;
-        width: 9px;
-        height: 9px;
+        left: 0.25rem;
+        top: 0.5rem;
+        bottom: 0;
+        width: 2px;
+        background-color: var(--color-border);
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.5rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
-        background: #198754;
+        background-color: var(--color-surface);
+        border: 2px solid var(--color-border);
+        z-index: 1;
     }
-
-    .history-dot.inactive {
-        background: #fff;
-        border: 1px solid #ccc;
+    .timeline-item.active::before {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
     }
-
-    .history-status {
-        font-size: 11px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 3px;
+    .timeline-item.active.completed::before {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
     }
-
-    .history-date {
-        font-size: 10px;
-        color: #777;
-        line-height: 1.4;
+    .timeline-item.active.rejected::before {
+        background-color: var(--color-danger);
+        border-color: var(--color-danger);
     }
-
-    .history-note {
-        font-size: 10px;
-        color: #999;
-        margin-top: 3px;
-    }
-
-    /* =========================================================
-       RATING
-       ========================================================= */
-
-    .rating-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #1f2a24;
-        margin-bottom: 5px;
-    }
-
-    .rating-description {
-        font-size: 11px;
-        color: #777;
-        margin-bottom: 15px;
-    }
-
-    /* BINTANG NORMAL: 1 2 3 4 5 */
-    .rating-stars {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 3px;
-        margin-bottom: 15px;
-    }
-
-    .rating-stars input {
-        display: none;
-    }
-
-    .rating-stars label {
-        font-size: 36px;
-        color: #d7d7d7;
-        cursor: pointer;
-        transition: .15s;
-        line-height: 1;
-        margin: 0;
-    }
-
-    .rating-stars label:hover,
-    .rating-stars label.hovered,
-    .rating-stars label.active {
-        color: #ffc107;
-    }
-
-    .rating-comment {
-        width: 100%;
-        min-height: 80px;
-        border: 1px solid #ddd;
-        border-radius: 7px;
-        padding: 10px;
-        font-size: 12px;
-        resize: vertical;
-        margin-bottom: 12px;
-        box-sizing: border-box;
-    }
-
-    .rating-comment:focus {
-        outline: none;
-        border-color: #198754;
-    }
-
-    .rating-done {
-        padding: 12px;
-        border-radius: 7px;
-        background: #f1f8f4;
-        color: #1f6e43;
-        font-size: 12px;
-    }
-
-    /* =========================================================
-       POPUP FOTO
-       ========================================================= */
-
-    .foto-modal {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background: rgba(0, 0, 0, .82);
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-    }
-
-    .foto-modal img {
-        width: min(1100px, 96vw);
-        max-height: 94vh;
-        height: auto;
-        object-fit: contain;
-        display: block;
-        border-radius: 8px;
-        background: white;
-    }
-
-    .foto-close {
-        position: absolute;
-        top: 18px;
-        right: 28px;
-        color: white;
-        font-size: 42px;
-        line-height: 1;
-        cursor: pointer;
-        z-index: 100000;
-    }
-
-    /* =========================================================
-       POPUP MESSAGE
-       ========================================================= */
-
-    .flash-popup {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 100000;
-        min-width: 280px;
-        max-width: 380px;
-        padding: 13px 16px;
-        border-radius: 8px;
-        background: white;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, .15);
-        font-size: 12px;
-    }
-
-    .flash-success {
-        border-left: 4px solid #198754;
-    }
-
-    .flash-error {
-        border-left: 4px solid #dc3545;
-    }
-
-    @media (max-width: 768px) {
-
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .detail-top {
-            align-items: flex-start;
-            gap: 10px;
-            flex-direction: column;
-        }
-
-        .foto-laporan,
-        .foto-empty {
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .foto-modal img {
-            width: 96vw;
-            max-width: 96vw;
-            max-height: 90vh;
-        }
-
-        .foto-close {
-            top: 10px;
-            right: 15px;
-        }
+    .timeline-date {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-muted);
     }
 </style>
 
+<div class="container pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ route('masyarakat.dashboard') }}" class="text-decoration-none text-muted mb-2 d-inline-block small">
+                <i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Dashboard
+            </a>
 
-<div class="detail-page">
-
-    {{-- PESAN SUKSES --}}
-    @if(session('success'))
-        <div class="flash-popup flash-success" id="successPopup">
-            {{ session('success') }}
+            <h3 class="fw-bold mb-0">
+                Detail Laporan
+            </h3>
         </div>
-    @endif
-
-    {{-- PESAN ERROR --}}
-    @if(session('error'))
-        <div class="flash-popup flash-error" id="errorPopup">
-            {{ session('error') }}
-        </div>
-    @endif
-
-
-    {{-- KEMBALI --}}
-    <a href="{{ route('masyarakat.dashboard') }}" class="back-link">
-        ← Kembali ke Dashboard
-    </a>
-
-
-    {{-- JUDUL + STATUS --}}
-    <div class="detail-top">
-
-        <h4>Detail Laporan</h4>
-
+        
         @php
-            $status = $laporan->status ?? 'menunggu_verifikasi';
-
-            $statusLabel = match ($status) {
-                'menunggu_verifikasi' => 'Menunggu Verifikasi',
-                'diverifikasi' => 'Diverifikasi',
-                'sedang_ditangani' => 'Sedang Ditangani',
-                'menunggu_validasi_akhir' => 'Menunggu Validasi',
-                'selesai' => 'Selesai',
-                'ditolak' => 'Ditolak',
-                default => ucfirst(str_replace('_', ' ', $status)),
-            };
-
-            $statusClass = match ($status) {
-                'menunggu_verifikasi' => 'status-menunggu',
-                'diverifikasi' => 'status-diverifikasi',
-                'sedang_ditangani' => 'status-proses',
-                'menunggu_validasi_akhir' => 'status-validasi',
-                'selesai' => 'status-selesai',
-                'ditolak' => 'status-ditolak',
-                default => 'status-menunggu',
-            };
+            $badgeClass = 'bg-secondary';
+            $icon = 'fa-circle-info';
+            $statusLabel = ucwords(str_replace('_', ' ', $laporan->status));
+            
+            if($laporan->status == 'menunggu_verifikasi') {
+                $badgeClass = 'bg-warning text-dark';
+                $icon = 'fa-clock';
+            }
+            elseif($laporan->status == 'diverifikasi') {
+                $badgeClass = 'bg-info';
+                $icon = 'fa-clipboard-check';
+            }
+            elseif($laporan->status == 'sedang_ditangani') {
+                $badgeClass = 'bg-primary';
+                $icon = 'fa-broom';
+            }
+            elseif($laporan->status == 'selesai') {
+                $badgeClass = 'bg-success';
+                $icon = 'fa-circle-check';
+            }
+            elseif($laporan->status == 'ditolak') {
+                $badgeClass = 'bg-danger';
+                $icon = 'fa-circle-xmark';
+            }
         @endphp
-
-        <span class="status-badge {{ $statusClass }}">
-            ● {{ $statusLabel }}
+        
+        <span class="badge {{ $badgeClass }} fs-6 px-3 py-2 rounded-pill shadow-sm">
+            <i class="fa-solid {{ $icon }} me-2"></i>
+            {{ $statusLabel }}
         </span>
-
     </div>
 
+    <div class="row g-4">
 
-    <div class="detail-grid">
+        <!-- Kolom Kiri: Info Laporan -->
+        <div class="col-lg-8">
 
-        {{-- =========================================================
-             BAGIAN DETAIL LAPORAN
-        ========================================================== --}}
-        <div>
+            <div class="card border-0 shadow-sm mb-4">
 
-            <div class="detail-card">
+                <div class="card-body p-4">
 
-                {{-- JUDUL --}}
-                <div class="laporan-title">
-                    {{ $laporan->judul_laporan ?? '-' }}
-                </div>
+                    <h4 class="fw-bold text-primary mb-1">
+                        {{ $laporan->judul_laporan }}
+                    </h4>
 
+                    <p class="text-muted font-mono small mb-4">
+                        <i class="fa-solid fa-hashtag"></i>
+                        {{ $laporan->kode_laporan }}
 
-                {{-- KODE + TANGGAL --}}
-                <div class="laporan-meta">
-                    # {{ $laporan->kode_laporan ?? '-' }}
-                    &nbsp; • &nbsp;
-                    Dibuat pada
-                    {{ $laporan->created_at
-                        ? $laporan->created_at->format('d M Y, H:i')
-                        : '-' }}
-                </div>
+                        &bull;
 
+                        Dibuat pada
+                        {{ $laporan->created_at->format('d M Y, H:i') }}
+                    </p>
+                    
+                    <div class="row mb-4">
 
-                {{-- KATEGORI --}}
-                <div class="label">
-                    Kategori Sampah
-                </div>
+                        <div class="col-sm-6 mb-3 mb-sm-0">
 
-                <div class="value kategori">
-                    <span class="kategori-icon">●</span>
-                    {{ $laporan->kategoriSampah->nama_kategori ?? '-' }}
-                </div>
+                            <small class="text-muted d-block mb-1">
+                                Kategori Sampah
+                            </small>
 
+                            <span class="fw-semibold">
+                                <i class="fa-solid fa-tags text-primary me-1"></i>
+                                {{ $laporan->kategoriSampah->nama_kategori ?? '-' }}
+                            </span>
 
-                {{-- DESKRIPSI --}}
-                <div class="label">
-                    Deskripsi
-                </div>
+                        </div>
 
-                <div class="value">
-                    {{ $laporan->deskripsi ?? '-' }}
-                </div>
-
-
-                {{-- ALAMAT --}}
-                <div class="label">
-                    Alamat Lengkap
-                </div>
-
-                <div class="value">
-                    {{ $laporan->alamat_lengkap ?? '-' }}
-                </div>
-
-
-                {{-- FOTO --}}
-                <div class="label">
-                    Foto Laporan
-                </div>
-
-                @php
-                    $foto = $laporan->foto_laporan ?? [];
-
-                    if (!is_array($foto)) {
-                        $foto = [$foto];
-                    }
-
-                    $fotoPertama = $foto[0] ?? null;
-
-                    $fotoUrl = $fotoPertama
-                        ? asset('uploads/' . $fotoPertama)
-                        : null;
-                @endphp
-
-
-                @if($fotoUrl)
-
-                    <img
-                        src="{{ $fotoUrl }}"
-                        alt="Foto Laporan"
-                        class="foto-laporan"
-                        onclick="bukaFoto(@js($fotoUrl))"
-                        title="Klik untuk melihat gambar lebih besar"
-                    >
-
-                    <div class="foto-hint">
-                        Klik foto untuk melihat ukuran lebih besar.
                     </div>
 
-                @else
+                    <h6 class="fw-bold mb-2">
+                        Deskripsi
+                    </h6>
 
-                    <div class="foto-empty">
-                        Tidak ada foto laporan
-                    </div>
+                    <p class="mb-4" style="line-height: 1.7;">
+                        {{ $laporan->deskripsi }}
+                    </p>
+                    
+                    <h6 class="fw-bold mb-2">
+                        Alamat Lengkap
+                    </h6>
 
-                @endif
+                    <p class="mb-4">
+                        {{ $laporan->alamat_lengkap }},
+                        Desa {{ $laporan->desa->nama_desa ?? '-' }},
+                        Kec. {{ $laporan->kecamatan->nama_kecamatan ?? '-' }}
+                    </p>
+                    
+                    <h6 class="fw-bold mb-3">
+                        Foto Laporan
+                    </h6>
 
+                    <div class="row g-2 mb-4">
 
-                {{-- LOKASI --}}
-                <div
-                    class="label"
-                    style="margin-top: 18px;"
-                >
-                    Lokasi Peta
-                </div>
+                        @if(!empty($laporan->foto_laporan))
 
-                <div class="map-wrapper">
-                    <div id="map"></div>
-                </div>
+                            @foreach($laporan->foto_laporan as $foto)
 
-            </div>
+                                <div class="col-6 col-md-4">
 
+                                    <img
+                                        src="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}"
+                                        onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
+                                        alt="Foto Laporan"
+                                        class="img-fluid rounded shadow-sm w-100"
+                                        style="object-fit: cover; height: 150px;"
+                                    >
 
-            {{-- =====================================================
-                 RATING
-            ====================================================== --}}
+                                </div>
 
-            @if($status === 'selesai')
+                            @endforeach
 
-                <div class="rating-card">
+                        @else
 
-                    @if(isset($rating) && $rating)
-
-                        {{-- SUDAH RATING --}}
-
-                        <div class="rating-title">
-                            Rating Laporan
-                        </div>
-
-                        <div class="rating-description">
-                            Anda sudah memberikan rating untuk laporan ini.
-                        </div>
-
-
-                        <div
-                            class="rating-stars"
-                            style="
-                                flex-direction: row;
-                                justify-content: flex-start;
-                                pointer-events: none;
-                            "
-                        >
-
-                            @for($i = 1; $i <= 5; $i++)
-
-                                <span
-                                    style="
-                                        font-size: 36px;
-                                        line-height: 1;
-                                        color: {{ $i <= $rating->rating ? '#ffc107' : '#d7d7d7' }};
-                                    "
-                                >
-                                    ★
-                                </span>
-
-                            @endfor
-
-                        </div>
-
-
-                        @if($rating->komentar)
-
-                            <div
-                                style="
-                                    font-size: 11px;
-                                    color: #666;
-                                    margin-bottom: 12px;
-                                "
-                            >
-                                "{{ $rating->komentar }}"
+                            <div class="col-12">
+                                <p class="text-muted fst-italic">
+                                    Tidak ada foto.
+                                </p>
                             </div>
 
                         @endif
 
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">
+                        Lokasi Peta
+                    </h6>
 
-                        <div class="rating-done">
-                            Rating sudah tersimpan.
-                        </div>
+                    <div
+                        class="rounded overflow-hidden shadow-sm border"
+                        style="height: 300px;"
+                        id="mapDetail">
+                    </div>
 
-                    @else
+                </div>
 
-                        {{-- BELUM RATING --}}
+            </div>
+            
 
-                        <div class="rating-title">
-                            Beri Rating
-                        </div>
+            {{-- ========================================================= --}}
+            {{-- RATING MASYARAKAT --}}
+            {{-- ========================================================= --}}
 
-                        <div class="rating-description">
-                            Laporan sudah selesai. Silakan berikan penilaian.
-                        </div>
+            @if($laporan->status == 'selesai')
 
+                <div class="card border-0 shadow-sm bg-light">
 
-                        <form
-                            action="{{ route('masyarakat.laporan.rating', $laporan->id) }}"
-                            method="POST"
-                        >
-                            @csrf
+                    <div class="card-body p-4 text-center">
 
+                        {{-- BELUM MEMBERI RATING --}}
+                        @if(!$laporan->rating)
 
-                            <div
-                                class="rating-stars"
-                                id="ratingStars"
+                            <h5 class="fw-bold mb-3">
+                                Beri Nilai Pekerjaan Ini
+                            </h5>
+
+                            <p class="text-muted mb-4">
+                                Laporan Anda telah selesai ditangani.
+                                Berikan rating dan ulasan untuk kinerja petugas kami.
+                            </p>
+
+                            <div class="fs-1 text-warning mb-3">
+
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+
+                            </div>
+
+                            <a
+                                href="{{ route('masyarakat.rating.create', $laporan->id) }}"
+                                class="btn btn-warning px-4 rounded-pill"
                             >
+                                <i class="fa-solid fa-star me-2"></i>
+                                Beri Rating
+                            </a>
+
+                        {{-- SUDAH MEMBERI RATING --}}
+                        @else
+
+                            <h5 class="fw-bold mb-3 text-success">
+                                Terima Kasih Atas Penilaian Anda
+                            </h5>
+
+                            <p class="text-muted mb-3">
+                                Penilaian Anda telah berhasil dikirim.
+                            </p>
+
+                            {{-- BINTANG RATING --}}
+                            <div class="mb-3">
 
                                 @for($i = 1; $i <= 5; $i++)
 
-                                    <input
-                                        type="radio"
-                                        name="rating"
-                                        id="star{{ $laporan->id }}_{{ $i }}"
-                                        value="{{ $i }}"
-                                        {{ old('rating') == $i ? 'checked' : '' }}
-                                        required
-                                    >
+                                    @if($i <= $laporan->rating->rating)
 
-                                    <label
-                                        for="star{{ $laporan->id }}_{{ $i }}"
-                                        data-value="{{ $i }}"
-                                        title="{{ $i }} bintang"
-                                    >
-                                        ★
-                                    </label>
+                                        <i class="fa-solid fa-star text-warning fs-3"></i>
+
+                                    @else
+
+                                        <i class="fa-regular fa-star text-warning fs-3"></i>
+
+                                    @endif
 
                                 @endfor
 
                             </div>
 
+                            {{-- NILAI --}}
+                            <div class="mb-3">
 
-                            <textarea
-                                name="komentar"
-                                class="rating-comment"
-                                placeholder="Komentar (opsional)..."
-                            >{{ old('komentar') }}</textarea>
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    {{ $laporan->rating->rating }}/5
+                                </span>
 
+                            </div>
 
-                            <button
-                                type="submit"
-                                class="btn btn-success btn-sm"
-                            >
-                                Kirim Rating
-                            </button>
+                            {{-- ULASAN --}}
+                            @if($laporan->rating->komentar)
 
-                        </form>
+                                <div class="alert alert-light border text-start mb-0">
 
-                    @endif
+                                    <div class="fw-bold mb-1">
+                                        <i class="fa-solid fa-comment-dots me-1"></i>
+                                        Ulasan Anda
+                                    </div>
+
+                                    <div class="text-muted">
+                                        "{{ $laporan->rating->komentar }}"
+                                    </div>
+
+                                </div>
+
+                            @else
+
+                                <p class="text-muted fst-italic mb-0">
+                                    Anda tidak memberikan ulasan.
+                                </p>
+
+                            @endif
+
+                        @endif
+
+                    </div>
 
                 </div>
 
@@ -737,130 +323,103 @@
         </div>
 
 
-        {{-- =========================================================
-             RIWAYAT STATUS
-        ========================================================== --}}
+        <!-- Kolom Kanan: Timeline -->
+        <div class="col-lg-4">
 
-        <div class="history-card">
+            <div
+                class="card border-0 shadow-sm sticky-top"
+                style="top: 2rem;"
+            >
 
-            <div class="history-title">
-                Riwayat Status
-            </div>
+                <div class="card-body p-4">
 
+                    <h5 class="fw-bold mb-4">
+                        Riwayat Status
+                    </h5>
+                    
+                    <div class="timeline">
 
-            {{-- MENUNGGU VERIFIKASI --}}
-
-            <div class="history-item">
-
-                <span class="history-dot"></span>
-
-                <div class="history-status">
-                    Menunggu Verifikasi
-                </div>
-
-                <div class="history-date">
-                    {{ $laporan->created_at
-                        ? $laporan->created_at->format('d M Y, H:i')
-                        : '-' }}
-                    • oleh Sistem
-                </div>
-
-            </div>
-
-
-            {{-- DIVERIFIKASI --}}
-
-            <div class="history-item">
-
-                <span
-                    class="history-dot {{
-                        $status === 'menunggu_verifikasi'
-                            ? 'inactive'
-                            : ''
-                    }}"
-                ></span>
-
-                <div class="history-status">
-                    Diverifikasi
-                </div>
-
-            </div>
-
-
-            {{-- SEDANG DITANGANI --}}
-
-            <div class="history-item">
-
-                <span
-                    class="history-dot {{
-                        !in_array(
-                            $status,
-                            [
-                                'sedang_ditangani',
-                                'menunggu_validasi_akhir',
-                                'selesai'
-                            ]
+                        @forelse(
+                            $laporan->laporanStatusHistories()
+                                ->orderBy('created_at', 'asc')
+                                ->get()
+                            as $history
                         )
-                            ? 'inactive'
-                            : ''
-                    }}"
-                ></span>
 
-                <div class="history-status">
-                    Sedang Ditangani
-                </div>
+                            @php
+                                $histClass = 'active';
 
-            </div>
+                                if($history->status == 'selesai') {
+                                    $histClass .= ' completed';
+                                }
 
+                                if($history->status == 'ditolak') {
+                                    $histClass .= ' rejected';
+                                }
+                            @endphp
 
-            {{-- MENUNGGU VALIDASI --}}
+                            <div class="timeline-item {{ $histClass }}">
 
-            <div class="history-item">
+                                <h6 class="fw-bold mb-1">
+                                    {{ ucwords(str_replace('_', ' ', $history->status)) }}
+                                </h6>
 
-                <span
-                    class="history-dot {{
-                        !in_array(
-                            $status,
-                            [
-                                'menunggu_validasi_akhir',
-                                'selesai'
-                            ]
-                        )
-                            ? 'inactive'
-                            : ''
-                    }}"
-                ></span>
+                                <div class="timeline-date mb-1">
+                                    {{ $history->created_at->format('d M Y, H:i') }}
 
-                <div class="history-status">
-                    Menunggu Validasi
-                </div>
+                                    &bull;
 
-            </div>
+                                    oleh
+                                    {{ $history->user->name ?? 'Sistem' }}
+                                </div>
 
+                                @if($history->keterangan)
 
-            {{-- SELESAI --}}
+                                    <p class="small text-muted mb-0 border-start ps-2 ms-1 mt-2">
+                                        "{{ $history->keterangan }}"
+                                    </p>
 
-            <div class="history-item">
+                                @endif
 
-                <span
-                    class="history-dot {{
-                        $status !== 'selesai'
-                            ? 'inactive'
-                            : ''
-                    }}"
-                ></span>
+                            </div>
 
-                <div class="history-status">
-                    Selesai
-                </div>
+                        @empty
 
-                @if($status === 'selesai')
+                            <div class="timeline-item active">
 
-                    <div class="history-note">
-                        Laporan telah selesai dan divalidasi Admin.
+                                <h6 class="fw-bold mb-1">
+                                    Menunggu Verifikasi
+                                </h6>
+
+                                <div class="timeline-date mb-0">
+                                    {{ $laporan->created_at->format('d M Y, H:i') }}
+                                    &bull;
+                                    oleh Sistem
+                                </div>
+
+                            </div>
+
+                        @endforelse
+                        
+                        @if(!in_array($laporan->status, ['selesai', 'ditolak']))
+
+                            <div class="timeline-item">
+
+                                <h6 class="text-muted mb-0">
+                                    Selesai
+                                </h6>
+
+                                <div class="timeline-date">
+                                    Menunggu penanganan selesai
+                                </div>
+
+                            </div>
+
+                        @endif
+
                     </div>
 
-                @endif
+                </div>
 
             </div>
 
@@ -871,322 +430,40 @@
 </div>
 
 
-{{-- =============================================================
-     POPUP FOTO
-============================================================= --}}
-
-<div
-    id="fotoModal"
-    class="foto-modal"
-    onclick="tutupFoto()"
->
-
-    <span
-        class="foto-close"
-        onclick="event.stopPropagation(); tutupFoto();"
-    >
-        &times;
-    </span>
-
-
-    <img
-        id="fotoModalImage"
-        src=""
-        alt="Foto Laporan"
-        onclick="event.stopPropagation();"
-    >
-
-</div>
-
-
-{{-- =============================================================
-     LEAFLET
-============================================================= --}}
-
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<!-- Leaflet JS -->
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin="">
+</script>
 
 <script>
 
-    /* =========================================================
-       RATING BINTANG
-       ========================================================= */
-
-    document.addEventListener('DOMContentLoaded', function () {
-
-        const ratingStars = document.getElementById('ratingStars');
-
-        if (ratingStars) {
-
-            const inputs = ratingStars.querySelectorAll(
-                'input[name="rating"]'
-            );
-
-            const labels = ratingStars.querySelectorAll(
-                'label'
-            );
-
-
-            /*
-             * Warnai bintang sesuai nilai yang dipilih.
-             */
-            function tampilkanRating(nilai) {
-
-                labels.forEach(function (label) {
-
-                    const value = parseInt(
-                        label.dataset.value
-                    );
-
-                    if (value <= nilai) {
-
-                        label.classList.add('active');
-
-                    } else {
-
-                        label.classList.remove('active');
-
-                    }
-
-                });
-
-            }
-
-
-            /*
-             * Klik bintang.
-             */
-            inputs.forEach(function (input) {
-
-                input.addEventListener('change', function () {
-
-                    const nilai = parseInt(
-                        this.value
-                    );
-
-                    tampilkanRating(nilai);
-
-                });
-
-            });
-
-
-            /*
-             * Efek saat mouse diarahkan ke bintang.
-             */
-            labels.forEach(function (label) {
-
-                label.addEventListener('mouseenter', function () {
-
-                    const nilai = parseInt(
-                        this.dataset.value
-                    );
-
-                    labels.forEach(function (item) {
-
-                        const value = parseInt(
-                            item.dataset.value
-                        );
-
-                        if (value <= nilai) {
-
-                            item.classList.add('hovered');
-
-                        } else {
-
-                            item.classList.remove('hovered');
-
-                        }
-
-                    });
-
-                });
-
-
-                label.addEventListener('mouseleave', function () {
-
-                    labels.forEach(function (item) {
-
-                        item.classList.remove('hovered');
-
-                    });
-
-
-                    const selected =
-                        ratingStars.querySelector(
-                            'input[name="rating"]:checked'
-                        );
-
-
-                    if (selected) {
-
-                        tampilkanRating(
-                            parseInt(selected.value)
-                        );
-
-                    } else {
-
-                        labels.forEach(function (item) {
-
-                            item.classList.remove('active');
-
-                        });
-
-                    }
-
-                });
-
-            });
-
-
-            /*
-             * Kalau sebelumnya ada old('rating'),
-             * tampilkan kembali pilihan tersebut.
-             */
-            const selected =
-                ratingStars.querySelector(
-                    'input[name="rating"]:checked'
-                );
-
-
-            if (selected) {
-
-                tampilkanRating(
-                    parseInt(selected.value)
-                );
-
-            }
-
-        }
-
-    });
-
-
-    /* =========================================================
-       POPUP FOTO
-       ========================================================= */
-
-    function bukaFoto(url) {
-
-        const modal =
-            document.getElementById('fotoModal');
-
-        const image =
-            document.getElementById('fotoModalImage');
-
-
-        image.src = url;
-
-        modal.style.display = 'flex';
-
-    }
-
-
-    function tutupFoto() {
-
-        const modal =
-            document.getElementById('fotoModal');
-
-        const image =
-            document.getElementById('fotoModalImage');
-
-
-        modal.style.display = 'none';
-
-        image.src = '';
-
-    }
-
-
-    document.addEventListener('keydown', function(event) {
-
-        if (event.key === 'Escape') {
-
-            tutupFoto();
-
-        }
-
-    });
-
-
-    /* =========================================================
-       LEAFLET
-       ========================================================= */
-
-    document.addEventListener('DOMContentLoaded', function () {
-
-        const latitude =
-            {{ $laporan->latitude ?? -7.6531 }};
-
-        const longitude =
-            {{ $laporan->longitude ?? 111.3284 }};
-
-
-        const map =
-            L.map('map').setView(
-                [latitude, longitude],
-                15
-            );
-
+    document.addEventListener("DOMContentLoaded", function() {
+
+        var lat = {{ $laporan->latitude ?? -7.6531 }};
+        var lng = {{ $laporan->longitude ?? 111.3284 }};
+        
+        var map = L.map('mapDetail').setView(
+            [lat, lng],
+            15
+        );
 
         L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-                attribution:
-                    '&copy; OpenStreetMap contributors'
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
             }
         ).addTo(map);
 
-
-        const marker =
-            L.marker([
-                latitude,
-                longitude
-            ]).addTo(map);
-
-
-        marker.bindPopup(`
-            <div style="font-size:11px;">
-                <strong>Lokasi Laporan</strong><br>
-                {{ $laporan->alamat_lengkap ?? '-' }}
-            </div>
-        `).openPopup();
+        L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(
+                "<b>Lokasi Laporan</b><br>{{ $laporan->alamat_lengkap }}"
+            )
+            .openPopup();
 
     });
-
-
-    /* =========================================================
-       POPUP MESSAGE
-       ========================================================= */
-
-    setTimeout(function () {
-
-        const successPopup =
-            document.getElementById('successPopup');
-
-        const errorPopup =
-            document.getElementById('errorPopup');
-
-
-        if (successPopup) {
-
-            successPopup.style.display = 'none';
-
-        }
-
-
-        if (errorPopup) {
-
-            errorPopup.style.display = 'none';
-
-        }
-
-    }, 4000);
 
 </script>
 

@@ -8,9 +8,15 @@ use App\Models\Penugasan;
 use App\Models\Petugas;
 use App\Models\LaporanStatusHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LaporanDitugaskan;
+use App\Mail\LaporanSelesai;
 
 class LaporanController extends Controller
 {
+    /**
+     * Menampilkan daftar laporan sampah.
+     */
     public function index(Request $request)
     {
         $query = $this->buildFilterQuery($request);
@@ -40,6 +46,9 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Halaman validasi pekerjaan.
+     */
     public function validasiPekerjaan(Request $request)
     {
         $laporans = LaporanSampah::with([
@@ -49,14 +58,14 @@ class LaporanController extends Controller
             'user',
             'dokumentasiPenanganan'
         ])
-        ->whereIn('status', [
-            'menunggu_validasi_akhir',
-            'sedang_ditangani',
-            'diverifikasi'
-        ])
-        ->whereHas('penugasan')
-        ->latest()
-        ->paginate(10);
+            ->whereIn('status', [
+                'menunggu_validasi_akhir',
+                'sedang_ditangani',
+                'diverifikasi'
+            ])
+            ->whereHas('penugasan')
+            ->latest()
+            ->paginate(10);
 
         return view(
             'admin.laporan.validasi',
@@ -65,6 +74,9 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Query filter laporan.
+     */
     private function buildFilterQuery(Request $request)
     {
         $query = LaporanSampah::with([
@@ -74,6 +86,9 @@ class LaporanController extends Controller
             'user'
         ]);
 
+        /*
+         * Filter status
+         */
         if ($request->filled('status')) {
             $query->where(
                 'status',
@@ -81,6 +96,9 @@ class LaporanController extends Controller
             );
         }
 
+        /*
+         * Filter kategori
+         */
         if ($request->filled('kategori_sampah_id')) {
             $query->where(
                 'kategori_sampah_id',
@@ -88,6 +106,9 @@ class LaporanController extends Controller
             );
         }
 
+        /*
+         * Filter kecamatan
+         */
         if ($request->filled('kecamatan_id')) {
             $query->where(
                 'kecamatan_id',
@@ -95,6 +116,9 @@ class LaporanController extends Controller
             );
         }
 
+        /*
+         * Filter petugas
+         */
         if ($request->filled('petugas_id')) {
             $query->whereHas(
                 'penugasan',
@@ -107,6 +131,9 @@ class LaporanController extends Controller
             );
         }
 
+        /*
+         * Filter tanggal
+         */
         if (
             $request->filled('tanggal_mulai') &&
             $request->filled('tanggal_akhir')
@@ -124,6 +151,9 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Export laporan ke PDF.
+     */
     public function exportPdf(Request $request)
     {
         $query = $this->buildFilterQuery($request);
@@ -134,7 +164,10 @@ class LaporanController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
             'admin.laporan.pdf',
-            compact('laporans', 'request')
+            compact(
+                'laporans',
+                'request'
+            )
         );
 
         return $pdf->download(
@@ -143,6 +176,9 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Export laporan ke Excel.
+     */
     public function exportExcel(Request $request)
     {
         $query = $this->buildFilterQuery($request);
@@ -154,6 +190,9 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Detail laporan.
+     */
     public function show($id)
     {
         $laporan = LaporanSampah::with([
@@ -164,17 +203,15 @@ class LaporanController extends Controller
             'penugasan.petugas.user',
             'dokumentasiPenanganan',
             'laporanStatusHistories.user'
-        ])->findOrFail($id);
-
+        ])
+            ->findOrFail($id);
 
         $petugasList = Petugas::with('user')
             ->withCount([
                 'penugasans' => function ($q) {
-
                     $q->whereHas(
                         'laporanSampah',
                         function ($q2) {
-
                             $q2->whereIn(
                                 'status',
                                 [
@@ -182,15 +219,15 @@ class LaporanController extends Controller
                                     'sedang_ditangani'
                                 ]
                             );
-
                         }
                     );
-
                 }
             ])
-            ->where('status_petugas', 'aktif')
+            ->where(
+                'status_petugas',
+                'aktif'
+            )
             ->get();
-
 
         return view(
             'admin.laporan.show',
@@ -202,12 +239,14 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Verifikasi laporan.
+     */
     public function verifikasi(
         Request $request,
         $id
     ) {
         $laporan = LaporanSampah::findOrFail($id);
-
 
         if (
             $laporan->status ===
@@ -220,7 +259,6 @@ class LaporanController extends Controller
                 'verified_at' => now()
             ]);
 
-
             LaporanStatusHistory::create([
                 'laporan_sampah_id' => $laporan->id,
                 'changed_by' => auth()->id(),
@@ -229,7 +267,6 @@ class LaporanController extends Controller
                 'keterangan' =>
                     'Laporan telah diverifikasi oleh Admin.'
             ]);
-
 
             logActivity(
                 'Verifikasi laporan',
@@ -240,15 +277,13 @@ class LaporanController extends Controller
                 auth()->id()
             );
 
-
             return redirect()
                 ->back()
                 ->with(
                     'success',
-                    'Laporan berhasil diverifikasi.'
+                    'Laporan berhasil diverifikasi. Silakan tugaskan petugas.'
                 );
         }
-
 
         return redirect()
             ->back()
@@ -259,6 +294,9 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Menolak laporan.
+     */
     public function tolak(
         Request $request,
         $id
@@ -268,9 +306,7 @@ class LaporanController extends Controller
                 'required|string|max:500'
         ]);
 
-
         $laporan = LaporanSampah::findOrFail($id);
-
 
         if (
             $laporan->status ===
@@ -285,17 +321,17 @@ class LaporanController extends Controller
                 'verified_at' => now()
             ]);
 
-
             LaporanStatusHistory::create([
                 'laporan_sampah_id' => $laporan->id,
                 'changed_by' => auth()->id(),
-                'status_sebelum' => 'menunggu_verifikasi',
-                'status_sesudah' => 'ditolak',
+                'status_sebelum' =>
+                    'menunggu_verifikasi',
+                'status_sesudah' =>
+                    'ditolak',
                 'keterangan' =>
                     'Laporan ditolak. Alasan: ' .
                     $request->alasan_penolakan
             ]);
-
 
             logActivity(
                 'Tolak laporan',
@@ -306,7 +342,6 @@ class LaporanController extends Controller
                 auth()->id()
             );
 
-
             return redirect()
                 ->back()
                 ->with(
@@ -314,7 +349,6 @@ class LaporanController extends Controller
                     'Laporan berhasil ditolak.'
                 );
         }
-
 
         return redirect()
             ->back()
@@ -325,6 +359,12 @@ class LaporanController extends Controller
     }
 
 
+    /**
+     * Menugaskan laporan kepada petugas.
+     *
+     * Email otomatis dikirim kepada petugas
+     * setelah penugasan berhasil.
+     */
     public function tugaskan(
         Request $request,
         $id
@@ -332,66 +372,36 @@ class LaporanController extends Controller
         $request->validate([
             'petugas_id' =>
                 'required|exists:petugas,id',
+
             'catatan_admin' =>
                 'nullable|string',
+
             'tenggat_waktu' =>
                 'nullable|date'
         ]);
 
-
         $laporan = LaporanSampah::findOrFail($id);
 
-
-        $statusAwal = $laporan->status;
-
-
+        /*
+         * Penugasan hanya dapat dilakukan
+         * jika laporan sudah diverifikasi.
+         */
         if (
-            in_array(
-                $laporan->status,
-                [
-                    'menunggu_verifikasi',
-                    'diverifikasi'
-                ]
-            )
+            $laporan->status !==
+            'diverifikasi'
         ) {
-
-            $laporan->update([
-                'status' => 'diverifikasi',
-                'verified_by' =>
-                    $laporan->verified_by ??
-                    auth()->id(),
-                'verified_at' =>
-                    $laporan->verified_at ??
-                    now()
-            ]);
-
-
-            if (
-                $statusAwal ===
-                'menunggu_verifikasi'
-            ) {
-
-                LaporanStatusHistory::create([
-                    'laporan_sampah_id' =>
-                        $laporan->id,
-
-                    'changed_by' =>
-                        auth()->id(),
-
-                    'status_sebelum' =>
-                        'menunggu_verifikasi',
-
-                    'status_sesudah' =>
-                        'diverifikasi',
-
-                    'keterangan' =>
-                        'Laporan diverifikasi otomatis saat penugasan.'
-                ]);
-            }
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Laporan harus diverifikasi terlebih dahulu sebelum petugas ditugaskan.'
+                );
         }
 
-
-        Penugasan::updateOrCreate(
+        /*
+         * Simpan penugasan.
+         */
+        $penugasan = Penugasan::updateOrCreate(
             [
                 'laporan_sampah_id' =>
                     $laporan->id
@@ -414,7 +424,9 @@ class LaporanController extends Controller
             ]
         );
 
-
+        /*
+         * Simpan history penugasan.
+         */
         LaporanStatusHistory::create([
             'laporan_sampah_id' =>
                 $laporan->id,
@@ -432,7 +444,9 @@ class LaporanController extends Controller
                 'Petugas telah ditugaskan.'
         ]);
 
-
+        /*
+         * Activity log.
+         */
         logActivity(
             'Tugaskan petugas',
             'Penugasan',
@@ -444,165 +458,95 @@ class LaporanController extends Controller
             auth()->id()
         );
 
+        /*
+         * ==========================================================
+         * KIRIM EMAIL KE PETUGAS
+         * ==========================================================
+         */
+        $petugas = Petugas::with('user')
+            ->findOrFail(
+                $request->petugas_id
+            );
 
+        if (
+            $petugas->user &&
+            $petugas->user->email
+        ) {
+
+            Mail::to(
+                $petugas->user->email
+            )->send(
+                new LaporanDitugaskan(
+                    $laporan,
+                    $penugasan,
+                    $petugas
+                )
+            );
+        }
+
+        /*
+         * Kembali ke halaman laporan.
+         */
         return redirect()
-            ->back()
+            ->route(
+                'admin.laporan.index'
+            )
             ->with(
-                'success',
+                'assignment_success',
                 'Petugas berhasil ditugaskan.'
             );
     }
 
 
     /**
-     * Ganti petugas yang sedang menangani laporan.
+     * Validasi akhir laporan.
+     *
+     * Ketika admin melakukan validasi akhir:
+     *
+     * menunggu_validasi_akhir
+     *          ↓
+     *       selesai
+     *
+     * Setelah status menjadi selesai,
+     * sistem otomatis mengirim email
+     * kepada masyarakat yang membuat laporan.
      */
-    public function gantiPetugas(
-        Request $request,
-        $id
-    ) {
-        $request->validate([
-            'petugas_id' =>
-                'required|exists:petugas,id',
-
-            'alasan_penggantian' =>
-                'required|string|max:500',
-        ]);
-
-
-        $laporan = LaporanSampah::findOrFail($id);
-
-
-        $penugasan = Penugasan::where(
-            'laporan_sampah_id',
-            $laporan->id
-        )->firstOrFail();
-
-
-        // Ambil petugas lama
-        $petugasLama = Petugas::with('user')
-            ->findOrFail(
-                $penugasan->petugas_id
-            );
-
-
-        // Ambil petugas baru
-        $petugasBaru = Petugas::with('user')
-            ->findOrFail(
-                $request->petugas_id
-            );
-
-
-        // Petugas baru harus berbeda
-        if (
-            (int) $petugasLama->id ===
-            (int) $petugasBaru->id
-        ) {
-
-            return redirect()
-                ->back()
-                ->with(
-                    'error',
-                    'Petugas baru harus berbeda dari petugas sebelumnya.'
-                );
-        }
-
-
-        // Update penugasan
-        $penugasan->update([
-            'petugas_id' =>
-                $petugasBaru->id,
-
-            'assigned_by' =>
-                auth()->id(),
-
-            'assigned_at' =>
-                now(),
-
-            'alasan_penggantian' =>
-                $request->alasan_penggantian,
-        ]);
-
-
-        // Simpan riwayat perubahan
-        LaporanStatusHistory::create([
-            'laporan_sampah_id' =>
-                $laporan->id,
-
-            'changed_by' =>
-                auth()->id(),
-
-            'status_sebelum' =>
-                $laporan->status,
-
-            'status_sesudah' =>
-                $laporan->status,
-
-            'keterangan' =>
-                'Petugas diganti dari "' .
-                (
-                    $petugasLama->user->name ??
-                    'Tidak diketahui'
-                ) .
-                '" menjadi "' .
-                (
-                    $petugasBaru->user->name ??
-                    'Tidak diketahui'
-                ) .
-                '". Alasan: ' .
-                $request->alasan_penggantian
-        ]);
-
-
-        // Simpan activity log
-        logActivity(
-            'Ganti petugas',
-            'Penugasan',
-            'Petugas laporan "' .
-                $laporan->kode_laporan .
-                '" diganti dari "' .
-                (
-                    $petugasLama->user->name ??
-                    'Tidak diketahui'
-                ) .
-                '" menjadi "' .
-                (
-                    $petugasBaru->user->name ??
-                    'Tidak diketahui'
-                ) .
-                '". Alasan: ' .
-                $request->alasan_penggantian,
-            auth()->id()
-        );
-
-
-        return redirect()
-            ->back()
-            ->with(
-                'success',
-                'Petugas berhasil diganti.'
-            );
-    }
-
-
     public function validasiAkhir(
         Request $request,
         $id
     ) {
-        $laporan = LaporanSampah::findOrFail($id);
+        /*
+         * Ambil laporan sekaligus data masyarakat
+         * dan data lain yang digunakan oleh email.
+         */
+        $laporan = LaporanSampah::with([
+            'user',
+            'kategoriSampah',
+            'kecamatan',
+            'desa',
+            'dokumentasiPenanganan'
+        ])->findOrFail($id);
 
-
+        /*
+         * Pastikan laporan memang sedang
+         * menunggu validasi akhir.
+         */
         if (
             $laporan->status ===
             'menunggu_validasi_akhir'
         ) {
 
+            /*
+             * Update status menjadi selesai.
+             */
             $laporan->update([
                 'status' => 'selesai',
                 'completed_at' => now()
             ]);
 
-
+            /*
+             * Simpan history perubahan status.
+             */
             LaporanStatusHistory::create([
                 'laporan_sampah_id' =>
                     $laporan->id,
@@ -620,7 +564,9 @@ class LaporanController extends Controller
                     'Penanganan laporan telah divalidasi dan selesai.'
             ]);
 
-
+            /*
+             * Activity log.
+             */
             logActivity(
                 'Validasi akhir laporan',
                 'Laporan',
@@ -630,7 +576,37 @@ class LaporanController extends Controller
                 auth()->id()
             );
 
+            /*
+             * ======================================================
+             * KIRIM EMAIL KE MASYARAKAT
+             * ======================================================
+             *
+             * Email dikirim setelah status laporan
+             * berhasil menjadi "selesai".
+             *
+             * Jika user memiliki email:
+             *     kirim email.
+             *
+             * Jika user tidak memiliki email:
+             *     proses tetap dianggap berhasil.
+             */
+            if (
+                $laporan->user &&
+                $laporan->user->email
+            ) {
 
+                Mail::to(
+                    $laporan->user->email
+                )->send(
+                    new LaporanSelesai(
+                        $laporan
+                    )
+                );
+            }
+
+            /*
+             * Kembali ke halaman sebelumnya.
+             */
             return redirect()
                 ->back()
                 ->with(
@@ -639,7 +615,9 @@ class LaporanController extends Controller
                 );
         }
 
-
+        /*
+         * Status laporan tidak sesuai.
+         */
         return redirect()
             ->back()
             ->with(

@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Masyarakat;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\LaporanSampah;
+use App\Models\Desa;
 use App\Models\KategoriSampah;
 use App\Models\Kecamatan;
-use App\Models\Desa;
+use App\Models\LaporanSampah;
 use App\Models\Rating;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rule;
 
 class LaporanController extends Controller
 {
@@ -25,25 +27,33 @@ class LaporanController extends Controller
     public function create()
     {
         $kategoris = KategoriSampah::where('is_active', true)->get();
+
         $kecamatans = Kecamatan::all();
+
         $desas = Desa::all();
 
-        return view('masyarakat.laporan.create', compact(
-            'kategoris',
-            'kecamatans',
-            'desas'
-        ));
+        return view(
+            'masyarakat.laporan.create',
+            compact(
+                'kategoris',
+                'kecamatans',
+                'desas'
+            )
+        );
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'judul_laporan' => 'required|string|max:150',
+
             'kategori_sampah_id' => 'required|exists:kategori_sampahs,id',
+
             'kecamatan_id' => 'required|exists:kecamatans,id',
+
             'desa_id' => [
                 'required',
-                \Illuminate\Validation\Rule::exists('desas', 'id')
+                Rule::exists('desas', 'id')
                     ->where(function ($query) use ($request) {
                         return $query->where(
                             'kecamatan_id',
@@ -51,16 +61,59 @@ class LaporanController extends Controller
                         );
                     }),
             ],
+
             'deskripsi' => 'required|string',
+
             'alamat_lengkap' => 'required|string',
+
             'latitude' => 'required|numeric',
+
             'longitude' => 'required|numeric',
-            'foto_laporan' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+
+            /*
+             * foto_laporan adalah array karena input Blade memakai:
+             * name="foto_laporan[]"
+             */
+            'foto_laporan' => 'required|array|min:1',
+
+            /*
+             * Validasi setiap foto yang berada di dalam array.
+             * Maksimal 2 MB untuk setiap file.
+             */
+            'foto_laporan.*' => 'required|file|image|mimes:jpeg,jpg,png|max:2048',
         ], [
             'desa_id.exists' =>
                 'Desa/Kelurahan yang dipilih tidak valid atau bukan bagian dari Kecamatan yang dipilih.',
+
+            'foto_laporan.required' =>
+                'Minimal satu foto laporan wajib diunggah.',
+
+            'foto_laporan.array' =>
+                'Format foto laporan tidak valid.',
+
+            'foto_laporan.min' =>
+                'Minimal satu foto laporan wajib diunggah.',
+
+            'foto_laporan.*.required' =>
+                'Foto laporan wajib diunggah.',
+
+            'foto_laporan.*.file' =>
+                'Foto laporan harus berupa file.',
+
+            'foto_laporan.*.image' =>
+                'Foto laporan harus berupa gambar.',
+
+            'foto_laporan.*.mimes' =>
+                'Foto laporan harus berformat JPEG, JPG, atau PNG.',
+
+            'foto_laporan.*.max' =>
+                'Ukuran setiap foto maksimal 2 MB.',
         ]);
 
+        /*
+         * Jangan ikut masukkan foto_laporan ke $data,
+         * karena foto akan diproses secara manual di bawah.
+         */
         $data = $request->except('foto_laporan');
 
         $laporan = new LaporanSampah($data);
@@ -70,27 +123,58 @@ class LaporanController extends Controller
         $laporan->kode_laporan =
             'SPT-' . date('Ymd') . '-' . rand(1000, 9999);
 
-        if ($request->hasFile('foto_laporan')) {
+        /*
+         * Buat folder upload jika belum tersedia.
+         *
+         * File disimpan di:
+         * public/uploads/laporan_fotos
+         *
+         * Path yang disimpan di database:
+         * laporan_fotos/nama_file.jpg
+         */
+        $destinationPath = public_path('uploads/laporan_fotos');
 
-            $file = $request->file('foto_laporan');
-
-            $imageName =
-                'laporan_' . time() . '_' . uniqid() . '.' . $file->extension();
-
-            $destinationPath =
-                public_path('uploads/laporan_fotos');
-
-            $file->move($destinationPath, $imageName);
-
-            $laporan->foto_laporan = [
-                'laporan_fotos/' . $imageName
-            ];
-
-        } else {
-
-            $laporan->foto_laporan = [];
-
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory(
+                $destinationPath,
+                0755,
+                true
+            );
         }
+
+        /*
+         * Menyimpan semua foto yang dikirim dari input foto_laporan[].
+         */
+        $fotoLaporan = [];
+
+        foreach ($request->file('foto_laporan') as $index => $file) {
+            $imageName =
+                'laporan_' .
+                time() .
+                '_' .
+                uniqid() .
+                '_' .
+                $index .
+                '.' .
+                $file->extension();
+
+            $file->move(
+                $destinationPath,
+                $imageName
+            );
+
+            $fotoLaporan[] =
+                'laporan_fotos/' . $imageName;
+        }
+
+        /*
+         * Pastikan kolom foto_laporan di model menggunakan cast array.
+         * Contoh:
+         * protected $casts = [
+         *     'foto_laporan' => 'array',
+         * ];
+         */
+        $laporan->foto_laporan = $fotoLaporan;
 
         $laporan->status = 'menunggu_verifikasi';
 
@@ -108,7 +192,10 @@ class LaporanController extends Controller
 
         return redirect()
             ->route('masyarakat.dashboard')
-            ->with('success', 'Laporan berhasil dikirim.');
+            ->with(
+                'success',
+                'Laporan berhasil dikirim.'
+            );
     }
 
     public function show(LaporanSampah $laporan)
@@ -117,24 +204,35 @@ class LaporanController extends Controller
             abort(403);
         }
 
-        $rating = Rating::where('laporan_sampah_id', $laporan->id)
+        $rating = Rating::where(
+            'laporan_sampah_id',
+            $laporan->id
+        )
             ->where('user_id', Auth::id())
             ->first();
 
         return view(
             'masyarakat.laporan.show',
-            compact('laporan', 'rating')
+            compact(
+                'laporan',
+                'rating'
+            )
         );
     }
 
-    public function storeRating(Request $request, LaporanSampah $laporan)
-    {
+    public function storeRating(
+        Request $request,
+        LaporanSampah $laporan
+    ) {
         if ($laporan->user_id !== Auth::id()) {
             abort(403);
         }
 
         if ($laporan->status !== 'selesai') {
-            return back()->with('error', 'Rating hanya dapat diberikan setelah laporan selesai.');
+            return back()->with(
+                'error',
+                'Rating hanya dapat diberikan setelah laporan selesai.'
+            );
         }
 
         $request->validate([
@@ -142,12 +240,18 @@ class LaporanController extends Controller
             'komentar' => 'nullable|string|max:500',
         ]);
 
-        $sudahAda = Rating::where('laporan_sampah_id', $laporan->id)
+        $sudahAda = Rating::where(
+            'laporan_sampah_id',
+            $laporan->id
+        )
             ->where('user_id', Auth::id())
             ->exists();
 
         if ($sudahAda) {
-            return back()->with('error', 'Laporan ini sudah diberi rating.');
+            return back()->with(
+                'error',
+                'Laporan ini sudah diberi rating.'
+            );
         }
 
         Rating::create([
@@ -157,6 +261,9 @@ class LaporanController extends Controller
             'komentar' => $request->komentar,
         ]);
 
-        return back()->with('success', 'Rating berhasil disimpan.');
+        return back()->with(
+            'success',
+            'Rating berhasil disimpan.'
+        );
     }
 }

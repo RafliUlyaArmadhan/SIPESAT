@@ -6,8 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Penugasan;
 use App\Models\DokumentasiPenanganan;
 use App\Models\LaporanStatusHistory;
+use App\Models\User;
+use App\Mail\PetugasUpdatePengerjaan;
+use App\Mail\PetugasUpdatePengerjaanMasyarakat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class TugasController extends Controller
 {
@@ -175,6 +180,32 @@ class TugasController extends Controller
                 auth()->id()
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | EMAIL KE ADMIN
+            |--------------------------------------------------------------------------
+            */
+
+            $this->notifikasiEmailKeAdmin(
+                $laporan,
+                $petugas,
+                'mulai',
+                $dokumentasi
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | EMAIL KE MASYARAKAT
+            |--------------------------------------------------------------------------
+            */
+
+            $this->notifikasiEmailKeMasyarakat(
+                $laporan,
+                $petugas,
+                'mulai',
+                $dokumentasi
+            );
+
             return redirect()
                 ->back()
                 ->with(
@@ -270,12 +301,126 @@ class TugasController extends Controller
                 auth()->id()
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | EMAIL KE ADMIN
+            |--------------------------------------------------------------------------
+            */
+
+            $this->notifikasiEmailKeAdmin(
+                $laporan,
+                $petugas,
+                'selesai',
+                $dokumentasi
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | EMAIL KE MASYARAKAT
+            |--------------------------------------------------------------------------
+            */
+
+            $this->notifikasiEmailKeMasyarakat(
+                $laporan,
+                $petugas,
+                'selesai',
+                $dokumentasi
+            );
+
             return redirect()
                 ->back()
                 ->with(
                     'success',
                     'Status diupdate menjadi menunggu validasi akhir.'
                 );
+        }
+    }
+
+
+    /**
+     * Kirim email notifikasi ke seluruh admin aktif
+     * saat petugas memulai / menyelesaikan pengerjaan.
+     *
+     * Jika gagal kirim, hanya dicatat di log dan
+     * TIDAK menggagalkan update status petugas.
+     */
+    private function notifikasiEmailKeAdmin(
+        $laporan,
+        $petugas,
+        string $tahap,
+        $dokumentasi = null
+    ): void {
+        try {
+
+            $emailAdmins = User::whereHas(
+                'role',
+                fn ($q) => $q->where('name', 'admin')
+            )
+                ->where('is_active', true)
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->unique()
+                ->values();
+
+            if ($emailAdmins->isEmpty()) {
+                return;
+            }
+
+            Mail::to($emailAdmins->all())->send(
+                new PetugasUpdatePengerjaan(
+                    $laporan,
+                    $petugas,
+                    $tahap,
+                    $dokumentasi
+                )
+            );
+
+        } catch (\Throwable $e) {
+
+            Log::error(
+                'Gagal mengirim email notifikasi pengerjaan ke admin: '
+                . $e->getMessage()
+            );
+        }
+    }
+
+
+    /**
+     * Kirim email notifikasi ke masyarakat
+     * saat petugas memulai / menyelesaikan pengerjaan.
+     *
+     * Jika gagal kirim, hanya dicatat di log dan
+     * TIDAK menggagalkan update status petugas.
+     */
+    private function notifikasiEmailKeMasyarakat(
+        $laporan,
+        $petugas,
+        string $tahap,
+        $dokumentasi = null
+    ): void {
+        try {
+
+            $emailMasyarakat = $laporan->user?->email;
+
+            if (!$emailMasyarakat) {
+                return;
+            }
+
+            Mail::to($emailMasyarakat)->send(
+                new PetugasUpdatePengerjaanMasyarakat(
+                    $laporan,
+                    $petugas,
+                    $tahap,
+                    $dokumentasi
+                )
+            );
+
+        } catch (\Throwable $e) {
+
+            Log::error(
+                'Gagal mengirim email notifikasi pengerjaan ke masyarakat: '
+                . $e->getMessage()
+            );
         }
     }
 }

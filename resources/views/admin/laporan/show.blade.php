@@ -1,903 +1,495 @@
 ﻿@extends('layouts.app')
-
 @section('title', 'Detail Laporan - ' . $laporan->kode_laporan)
 
 @section('content')
 
-<link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      crossorigin=""/>
+<!-- Leaflet CSS -->
 
-<style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 
-    .detail-wrapper {
-        padding-bottom: 30px;
-    }
+<div class="container-fluid">
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-    .detail-card {
-        border: 0;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,.06);
-        margin-bottom: 20px;
-    }
+```
+@if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 
-    .detail-card .card-header {
-        background: #fff;
-        border-bottom: 1px solid #eee;
-        border-radius: 12px 12px 0 0;
-        font-weight: 700;
-    }
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="m-0">Informasi Laporan</h5>
 
-    .label-detail {
-        color: #777;
-        font-size: 12px;
-        margin-bottom: 4px;
-    }
+                @php
+                    $statusClass = match($laporan->status) {
+                        'menunggu_verifikasi' => 'bg-warning text-dark',
+                        'diverifikasi' => 'bg-info',
+                        'sedang_ditangani' => 'bg-primary',
+                        'menunggu_validasi_akhir' => 'bg-secondary',
+                        'selesai' => 'bg-success',
+                        'ditolak' => 'bg-danger',
+                        default => 'bg-dark'
+                    };
 
-    .value-detail {
-        font-size: 13px;
-        color: #222;
-        margin-bottom: 16px;
-    }
+                    $statusLabel = str_replace('_', ' ', strtoupper($laporan->status));
+                @endphp
 
-    .foto-box {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
+                <span class="badge {{ $statusClass }} px-3 py-2">
+                    {{ $statusLabel }}
+                </span>
+            </div>
 
-    .foto-thumb {
-        width: 180px;
-        height: 130px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        cursor: pointer;
-        transition: .2s;
-    }
+            <div class="card-body">
 
-    .foto-thumb:hover {
-        transform: scale(1.03);
-        opacity: .9;
-    }
+                <div class="row mb-3">
+                    <div class="col-md-4 text-muted">Judul Laporan</div>
+                    <div class="col-md-8 fw-bold">
+                        {{ $laporan->judul_laporan }}
+                    </div>
+                </div>
 
-    .foto-empty {
-        padding: 25px;
-        background: #f8f9fa;
-        border: 1px dashed #ccc;
-        border-radius: 8px;
-        color: #888;
-        font-size: 12px;
-        text-align: center;
-    }
+                <div class="row mb-3">
+                    <div class="col-md-4 text-muted">Deskripsi</div>
+                    <div class="col-md-8">
+                        {{ $laporan->deskripsi }}
+                    </div>
+                </div>
 
-    #mapDetailAdmin {
-        width: 100%;
-        height: 300px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-    }
+                <div class="row mb-3">
+                    <div class="col-md-4 text-muted">Pelapor</div>
+                    <div class="col-md-8">
+                        {{ $laporan->user->name ?? 'Anonim' }}
+                        ({{ $laporan->created_at->format('d M Y H:i') }})
+                    </div>
+                </div>
 
-    .status-badge-custom {
-        display: inline-block;
-        padding: 7px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-    }
+                <div class="row mb-3">
+                    <div class="col-md-4 text-muted">Lokasi</div>
+                    <div class="col-md-8">
+                        {{ $laporan->alamat_lengkap }}<br>
 
-    .history-item {
-        padding: 14px 16px;
-        border-bottom: 1px solid #eee;
-    }
+                        <small class="text-muted">
+                            Kecamatan: {{ $laporan->kecamatan->nama_kecamatan ?? '-' }},
+                            Desa: {{ $laporan->desa->nama_desa ?? '-' }}
+                        </small>
+                    </div>
+                </div>
 
-    .history-item:last-child {
-        border-bottom: 0;
-    }
+                <div class="row mb-3">
+                    <div class="col-md-4 text-muted">Koordinat (Peta)</div>
+                    <div class="col-md-8">
+                        Lat: {{ $laporan->latitude }},
+                        Lng: {{ $laporan->longitude }}
 
-    .history-status {
-        font-size: 12px;
-        font-weight: 700;
-    }
+                        <div
+                            class="mt-2"
+                            id="mapDetailAdmin"
+                            style="height: 300px; border-radius: 8px; border: 1px solid var(--color-border); z-index: 1;">
+                        </div>
+                    </div>
+                </div>
 
-    .history-info {
-        font-size: 11px;
-        color: #777;
-    }
+                @if($laporan->status === 'ditolak')
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-danger fw-bold">
+                            Alasan Penolakan
+                        </div>
 
-    .action-card {
-        position: sticky;
-        top: 20px;
-    }
+                        <div class="col-md-8">
+                            <div class="alert alert-danger mb-0 p-2">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                {{ $laporan->alasan_penolakan ?? 'Tidak ada alasan.' }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
-    .photo-modal {
-        display: none;
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-        background: rgba(0,0,0,.88);
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
+                @if($laporan->foto_laporan)
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">
+                            Foto Laporan (Awal)
+                        </div>
 
-    .photo-modal img {
-        max-width: 92vw;
-        max-height: 90vh;
-        object-fit: contain;
-        border-radius: 8px;
-    }
+                        <div class="col-md-8">
+                            <div class="d-flex gap-2 flex-wrap">
 
-    .photo-modal-close {
-        position: absolute;
-        top: 15px;
-        right: 25px;
-        color: white;
-        font-size: 40px;
-        cursor: pointer;
-        line-height: 1;
-    }
+                                @foreach((array)$laporan->foto_laporan as $foto)
+                                    <img
+                                        src="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}"
+                                        onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
+                                        alt="Foto"
+                                        class="img-thumbnail laporan-image-preview"
+                                        style="max-width: 150px; cursor: pointer;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalPreviewImage"
+                                        data-image="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}">
+                                @endforeach
 
-    @media(max-width:768px) {
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
-        .foto-thumb {
-            width: 140px;
-            height: 105px;
-        }
-
-        .action-card {
-            position: static;
-        }
-
-    }
-
-</style>
-
-
-<div class="container-fluid detail-wrapper">
-
-    <!-- ================= HEADER ================= -->
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <div>
-            <h4 class="fw-bold mb-1">
-                Detail Laporan
-            </h4>
-
-            <div class="text-muted small">
-                #{{ $laporan->kode_laporan }}
             </div>
         </div>
 
-        @php
+        @if($laporan->dokumentasiPenanganan)
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="m-0">Dokumentasi Penanganan</h5>
+                </div>
 
-            $statusLabel = match($laporan->status) {
+                <div class="card-body">
+                    <div class="row">
 
-                'menunggu_verifikasi'
-                    => 'Menunggu Verifikasi',
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">
+                                Foto Sebelum (Oleh Petugas)
+                            </h6>
 
-                'diverifikasi'
-                    => 'Diverifikasi',
+                            @if($laporan->dokumentasiPenanganan->foto_sebelum)
 
-                'sedang_ditangani'
-                    => 'Sedang Ditangani',
+                                <div class="d-flex gap-2 flex-wrap">
 
-                'menunggu_validasi_akhir'
-                    => 'Menunggu Validasi Akhir',
+                                    @foreach((array)$laporan->dokumentasiPenanganan->foto_sebelum as $foto)
+                                        <img
+                                            src="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}"
+                                            onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
+                                            alt="Foto"
+                                            class="img-thumbnail laporan-image-preview"
+                                            style="max-width: 150px; cursor: pointer;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalPreviewImage"
+                                            data-image="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}">
+                                    @endforeach
 
-                'selesai'
-                    => 'Selesai',
+                                </div>
 
-                'ditolak'
-                    => 'Ditolak',
+                            @else
+                                <span class="text-muted fst-italic">
+                                    Belum ada foto
+                                </span>
+                            @endif
+                        </div>
 
-                default
-                    => ucfirst(
-                        str_replace(
-                            '_',
-                            ' ',
-                            $laporan->status
-                        )
-                    ),
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted">
+                                Foto Sesudah (Oleh Petugas)
+                            </h6>
 
-            };
+                            @if($laporan->dokumentasiPenanganan->foto_sesudah)
 
-            $statusClass = match($laporan->status) {
+                                <div class="d-flex gap-2 flex-wrap">
 
-                'menunggu_verifikasi'
-                    => 'bg-warning text-dark',
+                                    @foreach((array)$laporan->dokumentasiPenanganan->foto_sesudah as $foto)
+                                        <img
+                                            src="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}"
+                                            onerror="this.onerror=null;this.src='{{ asset('images/no-image.png') }}';"
+                                            alt="Foto"
+                                            class="img-thumbnail laporan-image-preview"
+                                            style="max-width: 150px; cursor: pointer;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalPreviewImage"
+                                            data-image="{{ asset(str_starts_with($foto, 'uploads/') ? $foto : 'uploads/' . $foto) }}">
+                                    @endforeach
 
-                'diverifikasi'
-                    => 'bg-primary',
+                                </div>
 
-                'sedang_ditangani'
-                    => 'bg-primary',
+                            @else
+                                <span class="text-muted fst-italic">
+                                    Belum ada foto
+                                </span>
+                            @endif
+                        </div>
 
-                'menunggu_validasi_akhir'
-                    => 'bg-warning text-dark',
+                    </div>
 
-                'selesai'
-                    => 'bg-success',
+                    @if($laporan->dokumentasiPenanganan->catatan_pekerjaan)
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <h6 class="text-muted">
+                                    Catatan Pekerjaan
+                                </h6>
 
-                'ditolak'
-                    => 'bg-danger',
+                                <p>
+                                    {{ $laporan->dokumentasiPenanganan->catatan_pekerjaan }}
+                                </p>
+                            </div>
+                        </div>
+                    @endif
 
-                default
-                    => 'bg-secondary',
-
-            };
-
-        @endphp
-
-        <span class="status-badge-custom {{ $statusClass }}">
-            {{ $statusLabel }}
-        </span>
+                </div>
+            </div>
+        @endif
 
     </div>
 
+    <div class="col-md-4">
 
-    <!-- ================= GRID ================= -->
-
-    <div class="row">
-
-        <!-- ================= BAGIAN KIRI ================= -->
-
-        <div class="col-lg-8">
-
-            <!-- INFORMASI LAPORAN -->
-
-            <div class="card detail-card">
-
-                <div class="card-header">
-                    <i class="fa-solid fa-file-lines me-2 text-primary"></i>
-                    Informasi Laporan
-                </div>
-
-                <div class="card-body">
-
-                    <div class="row">
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Judul Laporan
-                            </div>
-
-                            <div class="value-detail fw-bold">
-                                {{ $laporan->judul_laporan ?? '-' }}
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Kode Laporan
-                            </div>
-
-                            <div class="value-detail">
-                                {{ $laporan->kode_laporan ?? '-' }}
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Pelapor
-                            </div>
-
-                            <div class="value-detail">
-                                {{ $laporan->user?->name ?? 'Anonim' }}
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Tanggal Laporan
-                            </div>
-
-                            <div class="value-detail">
-
-                                {{ $laporan->created_at
-                                    ? $laporan->created_at->format('d M Y, H:i')
-                                    : '-'
-                                }}
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Kategori Sampah
-                            </div>
-
-                            <div class="value-detail">
-                                {{ $laporan->kategoriSampah?->nama_kategori ?? '-' }}
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Kecamatan
-                            </div>
-
-                            <div class="value-detail">
-                                {{ $laporan->kecamatan?->nama_kecamatan
-                                    ?? $laporan->kecamatan?->nama
-                                    ?? '-'
-                                }}
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <div class="label-detail">
-                                Desa
-                            </div>
-
-                            <div class="value-detail">
-                                {{ $laporan->desa?->nama_desa
-                                    ?? $laporan->desa?->nama
-                                    ?? '-'
-                                }}
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="label-detail">
-                        Alamat Lengkap
-                    </div>
-
-                    <div class="value-detail">
-                        {{ $laporan->alamat_lengkap ?? '-' }}
-                    </div>
-
-
-                    <div class="label-detail">
-                        Deskripsi
-                    </div>
-
-                    <div class="value-detail">
-                        {{ $laporan->deskripsi ?? '-' }}
-                    </div>
-
-                </div>
-
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="m-0">Aksi Admin</h5>
             </div>
 
+            <div class="card-body">
 
-            <!-- ================= FOTO LAPORAN ================= -->
+                {{-- ================================================= --}}
+                {{-- 1. LAPORAN MENUNGGU VERIFIKASI                   --}}
+                {{-- ================================================= --}}
 
-            <div class="card detail-card">
+                @if($laporan->status === 'menunggu_verifikasi')
 
-                <div class="card-header">
+                    <form
+                        action="{{ route('admin.laporan.verifikasi', $laporan->id) }}"
+                        method="POST">
 
-                    <i class="fa-solid fa-image me-2 text-primary"></i>
+                        @csrf
 
-                    Foto Laporan
+                        <button
+                            type="submit"
+                            class="btn btn-info text-white w-100 mb-2">
 
-                </div>
+                            <i class="fa-solid fa-check"></i>
+                            Verifikasi Laporan
 
+                        </button>
 
-                <div class="card-body">
+                    </form>
 
-                    @php
+                    <button
+                        type="button"
+                        class="btn btn-outline-danger w-100 mb-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalTolak">
 
-                        $fotoLaporan = $laporan->foto_laporan ?? [];
+                        <i class="fa-solid fa-xmark"></i>
+                        Tolak Laporan
 
-                        if (!is_array($fotoLaporan)) {
-                            $fotoLaporan = [$fotoLaporan];
-                        }
+                    </button>
 
-                    @endphp
+                    <!-- Modal Tolak -->
+                    <div
+                        class="modal fade"
+                        id="modalTolak"
+                        tabindex="-1">
 
-
-                    @if(count($fotoLaporan) > 0)
-
-                        <div class="foto-box">
-
-                            @foreach($fotoLaporan as $foto)
-
-                                @php
-
-                                    $fotoUrl = asset(
-                                        str_starts_with(
-                                            $foto,
-                                            'uploads/'
-                                        )
-                                        ? $foto
-                                        : 'uploads/' . $foto
-                                    );
-
-                                @endphp
-
-                                <img
-                                    src="{{ $fotoUrl }}"
-                                    class="foto-thumb"
-                                    alt="Foto Laporan"
-                                    onclick="bukaFoto('{{ $fotoUrl }}')"
-                                    onerror="this.onerror=null;this.style.display='none';"
-                                >
-
-                            @endforeach
-
-                        </div>
-
-                        <div class="text-muted small mt-2">
-                            Klik foto untuk melihat ukuran lebih besar.
-                        </div>
-
-                    @else
-
-                        <div class="foto-empty">
-                            Tidak ada foto laporan.
-                        </div>
-
-                    @endif
-
-                </div>
-
-            </div>
-
-
-            <!-- ================= DOKUMENTASI PENANGANAN ================= -->
-
-            <div class="card detail-card">
-
-                <div class="card-header">
-
-                    <i class="fa-solid fa-camera me-2 text-primary"></i>
-
-                    Dokumentasi Penanganan
-
-                </div>
-
-
-                <div class="card-body">
-
-                    @if($laporan->dokumentasiPenanganan)
-
-                        <!-- FOTO SEBELUM -->
-
-                        <div class="mb-4">
-
-                            <div class="fw-bold small mb-2">
-                                Foto Sebelum
-                            </div>
-
-                            @php
-
-                                $fotoSebelum =
-                                    $laporan->dokumentasiPenanganan->foto_sebelum
-                                    ?? [];
-
-                                if (!is_array($fotoSebelum)) {
-                                    $fotoSebelum = [$fotoSebelum];
-                                }
-
-                            @endphp
-
-
-                            @if(count($fotoSebelum) > 0)
-
-                                <div class="foto-box">
-
-                                    @foreach($fotoSebelum as $foto)
-
-                                        @php
-
-                                            $fotoUrl = asset(
-                                                str_starts_with(
-                                                    $foto,
-                                                    'uploads/'
-                                                )
-                                                ? $foto
-                                                : 'uploads/' . $foto
-                                            );
-
-                                        @endphp
-
-                                        <img
-                                            src="{{ $fotoUrl }}"
-                                            class="foto-thumb"
-                                            alt="Foto Sebelum"
-                                            onclick="bukaFoto('{{ $fotoUrl }}')"
-                                            onerror="this.onerror=null;this.style.display='none';"
-                                        >
-
-                                    @endforeach
-
-                                </div>
-
-                            @else
-
-                                <div class="foto-empty">
-                                    Belum ada Foto Sebelum.
-                                </div>
-
-                            @endif
-
-                        </div>
-
-
-                        <!-- FOTO SESUDAH -->
-
-                        <div class="mb-4">
-
-                            <div class="fw-bold small mb-2">
-                                Foto Sesudah
-                            </div>
-
-                            @php
-
-                                $fotoSesudah =
-                                    $laporan->dokumentasiPenanganan->foto_sesudah
-                                    ?? [];
-
-                                if (!is_array($fotoSesudah)) {
-                                    $fotoSesudah = [$fotoSesudah];
-                                }
-
-                            @endphp
-
-
-                            @if(count($fotoSesudah) > 0)
-
-                                <div class="foto-box">
-
-                                    @foreach($fotoSesudah as $foto)
-
-                                        @php
-
-                                            $fotoUrl = asset(
-                                                str_starts_with(
-                                                    $foto,
-                                                    'uploads/'
-                                                )
-                                                ? $foto
-                                                : 'uploads/' . $foto
-                                            );
-
-                                        @endphp
-
-                                        <img
-                                            src="{{ $fotoUrl }}"
-                                            class="foto-thumb"
-                                            alt="Foto Sesudah"
-                                            onclick="bukaFoto('{{ $fotoUrl }}')"
-                                            onerror="this.onerror=null;this.style.display='none';"
-                                        >
-
-                                    @endforeach
-
-                                </div>
-
-                            @else
-
-                                <div class="foto-empty">
-                                    Belum ada Foto Sesudah.
-                                </div>
-
-                            @endif
-
-                        </div>
-
-
-                        <!-- CATATAN -->
-
-                        @if(
-                            $laporan->dokumentasiPenanganan->catatan_pekerjaan
-                        )
-
-                            <div>
-
-                                <div class="fw-bold small mb-2">
-                                    Catatan Pekerjaan
-                                </div>
-
-                                <div
-                                    class="p-3 rounded"
-                                    style="background:#f8f9fa;"
-                                >
-                                    {{ $laporan->dokumentasiPenanganan->catatan_pekerjaan }}
-                                </div>
-
-                            </div>
-
-                        @endif
-
-
-                    @else
-
-                        <div class="foto-empty">
-                            Belum ada dokumentasi penanganan dari petugas.
-                        </div>
-
-                    @endif
-
-                </div>
-
-            </div>
-
-
-            <!-- ================= PETA ================= -->
-
-            <div class="card detail-card">
-
-                <div class="card-header">
-
-                    <i class="fa-solid fa-location-dot me-2 text-danger"></i>
-
-                    Lokasi Laporan
-
-                </div>
-
-                <div class="card-body">
-
-                    <div class="small text-muted mb-2">
-
-                        {{ $laporan->alamat_lengkap ?? '-' }}
-
-                    </div>
-
-                    <div id="mapDetailAdmin"></div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ================= RIWAYAT ================= -->
-
-            <div class="card detail-card">
-
-                <div class="card-header">
-
-                    <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>
-
-                    Riwayat Status
-
-                </div>
-
-
-                <div class="card-body p-0">
-
-                    @forelse(
-                        $laporan->laporanStatusHistories
-                        as $history
-                    )
-
-                        <div class="history-item">
-
-                            <div class="d-flex justify-content-between">
-
-                                <div class="history-status">
-
-                                    {{
-                                        str_replace(
-                                            '_',
-                                            ' ',
-                                            strtoupper(
-                                                $history->status_baru
-                                                ?? $history->status_sesudah
-                                                ?? '-'
-                                            )
-                                        )
-                                    }}
-
-                                </div>
-
-
-                                <div class="history-info">
-
-                                    {{
-                                        $history->created_at
-                                        ? $history->created_at->format(
-                                            'd M Y H:i'
-                                        )
-                                        : '-'
-                                    }}
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="history-info mt-1">
-
-                                {{ $history->keterangan ?? '-' }}
-
-                            </div>
-
-
-                            <div class="history-info mt-1">
-
-                                <i class="fa-solid fa-user me-1"></i>
-
-                                {{
-                                    $history->user?->name
-                                    ?? 'Sistem'
-                                }}
-
-                            </div>
-
-                        </div>
-
-                    @empty
-
-                        <div class="p-4 text-muted small">
-                            Belum ada riwayat status.
-                        </div>
-
-                    @endforelse
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- ================= BAGIAN KANAN ================= -->
-
-        <div class="col-lg-4">
-
-            <div class="action-card">
-
-                <!-- AKSI ADMIN -->
-
-                <div class="card detail-card">
-
-                    <div class="card-header">
-
-                        <i class="fa-solid fa-screwdriver-wrench me-2"></i>
-
-                        Aksi Admin
-
-                    </div>
-
-
-                    <div class="card-body">
-
-                        <!-- VERIFIKASI -->
-
-                        @if($laporan->status === 'menunggu_verifikasi')
+                        <div class="modal-dialog">
 
                             <form
-                                action="{{ route(
-                                    'admin.laporan.verifikasi',
-                                    $laporan->id
-                                ) }}"
-                                method="POST"
-                                class="mb-2"
-                            >
+                                action="{{ route('admin.laporan.tolak', $laporan->id) }}"
+                                method="POST">
 
                                 @csrf
 
-                                <button
-                                    type="submit"
-                                    class="btn btn-info text-white w-100"
-                                >
-                                    <i class="fa-solid fa-check me-1"></i>
+                                <div class="modal-content">
 
-                                    Verifikasi Laporan
+                                    <div class="modal-header">
 
-                                </button>
+                                        <h5 class="modal-title text-danger">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                            Tolak Laporan
+                                        </h5>
+
+                                        <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                            aria-label="Close">
+                                        </button>
+
+                                    </div>
+
+                                    <div class="modal-body">
+
+                                        <div class="mb-3">
+
+                                            <label class="form-label fw-bold">
+                                                Alasan Penolakan
+                                            </label>
+
+                                            <textarea
+                                                name="alasan_penolakan"
+                                                class="form-control"
+                                                rows="3"
+                                                required
+                                                placeholder="Tulis alasan laporan ini ditolak (misal: Alamat tidak jelas, Bukan kewenangan DLH, dll)..."></textarea>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="modal-footer">
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal">
+                                            Batal
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger">
+                                            Tolak Laporan
+                                        </button>
+
+                                    </div>
+
+                                </div>
 
                             </form>
+
+                        </div>
+
+                    </div>
+
+                @endif
+
+
+                {{-- ================================================= --}}
+                {{-- 2. LAPORAN SUDAH DIVERIFIKASI                    --}}
+                {{-- ================================================= --}}
+
+                @if($laporan->status === 'diverifikasi')
+
+                    <hr>
+
+                    {{-- ================================================= --}}
+                    {{-- JIKA SUDAH ADA PETUGAS, TAMPILKAN DETAIL SAJA --}}
+                    {{-- ================================================= --}}
+
+                    @if($laporan->penugasan)
+
+                        <div id="petugasTerpilih">
+
+                            <div class="mb-3">
+
+                                <label class="form-label text-muted">
+                                    Petugas yang Ditugaskan
+                                </label>
+
+                                <div class="border rounded p-3">
+
+                                    <div class="d-flex align-items-center">
+
+                                        <div class="me-3">
+                                            <div
+                                                class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                                style="width: 45px; height: 45px;">
+                                                <i class="fa-solid fa-user"></i>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div class="fw-bold">
+                                                {{ $laporan->penugasan->petugas?->user?->name ?? 'Petugas' }}
+                                            </div>
+
+                                            <small class="text-muted">
+                                                NIP:
+                                                {{ $laporan->penugasan->petugas?->nip ?? '-' }}
+                                            </small>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            @if($laporan->penugasan->tenggat_waktu)
+
+                                <div class="mb-3">
+
+                                    <label class="form-label text-muted">
+                                        Tenggat Waktu
+                                    </label>
+
+                                    <div class="form-control bg-light">
+                                        {{ $laporan->penugasan->tenggat_waktu->format('d M Y H:i') }}
+                                    </div>
+
+                                </div>
+
+                            @endif
+
+
+                            @if($laporan->penugasan->catatan_admin)
+
+                                <div class="mb-3">
+
+                                    <label class="form-label text-muted">
+                                        Catatan Admin
+                                    </label>
+
+                                    <div class="border rounded p-2 bg-light">
+                                        {{ $laporan->penugasan->catatan_admin }}
+                                    </div>
+
+                                </div>
+
+                            @endif
 
 
                             <button
                                 type="button"
-                                class="btn btn-outline-danger w-100 mb-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalTolak"
-                            >
+                                class="btn btn-outline-primary w-100"
+                                id="btnEditPetugas">
 
-                                <i class="fa-solid fa-xmark me-1"></i>
-
-                                Tolak Laporan
+                                <i class="fa-solid fa-pen-to-square me-1"></i>
+                                Edit Petugas
 
                             </button>
 
-                        @endif
+                        </div>
 
 
-                        <!-- TUGASKAN -->
+                        {{-- ================================================= --}}
+                        {{-- FORM EDIT PETUGAS --}}
+                        {{-- AWALNYA DISEMBUNYIKAN --}}
+                        {{-- ================================================= --}}
 
-                        @if(
-                            in_array(
-                                $laporan->status,
-                                [
-                                    'menunggu_verifikasi',
-                                    'diverifikasi'
-                                ]
-                            )
-                        )
-
-                            <hr>
+                        <div
+                            id="formEditPetugas"
+                            style="display: none;">
 
                             <form
-                                action="{{ route(
-                                    'admin.laporan.tugaskan',
-                                    $laporan->id
-                                ) }}"
-                                method="POST"
-                            >
+                                action="{{ route('admin.laporan.tugaskan', $laporan->id) }}"
+                                method="POST">
 
                                 @csrf
 
                                 <div class="mb-3">
 
-                                    <label class="form-label small fw-bold">
+                                    <label class="form-label">
                                         Tugaskan Petugas
                                     </label>
 
                                     <select
                                         name="petugas_id"
                                         class="form-select"
-                                        required
-                                    >
+                                        required>
 
                                         <option value="">
                                             -- Pilih Petugas --
                                         </option>
 
-                                        @foreach(
-                                            $petugasList
-                                            as $petugas
-                                        )
+                                        @foreach($petugasList as $p)
 
                                             <option
-                                                value="{{ $petugas->id }}"
-                                                {{
-                                                    $laporan->penugasan
-                                                    && $laporan->penugasan->petugas_id
-                                                    == $petugas->id
-                                                    ? 'selected'
-                                                    : ''
-                                                }}
-                                            >
+                                                value="{{ $p->id }}"
+                                                {{ $laporan->penugasan->petugas_id == $p->id ? 'selected' : '' }}>
 
-                                                {{
-                                                    $petugas->user?->name
-                                                    ?? 'Petugas'
-                                                }}
+                                                {{ $p->user?->name ?? 'Petugas' }}
 
-                                                @if(
-                                                    $petugas->penugasans_count > 0
-                                                )
-
-                                                    (
-                                                    Sedang menangani
-                                                    {{
-                                                        $petugas->penugasans_count
-                                                    }}
-                                                    tugas
-                                                    )
-
+                                                @if($p->penugasans_count > 0)
+                                                    (Sedang menangani {{ $p->penugasans_count }} tugas)
                                                 @else
-
                                                     (Tersedia)
-
                                                 @endif
 
                                             </option>
@@ -911,385 +503,459 @@
 
                                 <div class="mb-3">
 
-                                    <label class="form-label small fw-bold">
-                                        Tenggat Waktu
+                                    <label class="form-label">
+                                        Tenggat Waktu (Opsional)
                                     </label>
 
                                     <input
                                         type="datetime-local"
                                         name="tenggat_waktu"
                                         class="form-control"
-                                        value="{{
-                                            old(
-                                                'tenggat_waktu',
-                                                $laporan->penugasan?->tenggat_waktu
-                                                ? $laporan->penugasan->tenggat_waktu
-                                                    ->format('Y-m-d\TH:i')
+                                        value="{{ old(
+                                            'tenggat_waktu',
+                                            $laporan->penugasan?->tenggat_waktu
+                                                ? $laporan->penugasan->tenggat_waktu->format('Y-m-d\TH:i')
                                                 : ''
-                                            )
-                                        }}"
-                                    >
+                                        ) }}">
 
                                 </div>
 
 
                                 <div class="mb-3">
 
-                                    <label class="form-label small fw-bold">
+                                    <label class="form-label">
                                         Catatan Admin
                                     </label>
 
                                     <textarea
                                         name="catatan_admin"
                                         class="form-control"
-                                        rows="3"
-                                    >{{ old(
-                                        'catatan_admin',
-                                        $laporan->penugasan?->catatan_admin
-                                    ) }}</textarea>
+                                        rows="2">{{ old('catatan_admin', $laporan->penugasan->catatan_admin ?? '') }}</textarea>
 
                                 </div>
 
 
                                 <button
                                     type="submit"
-                                    class="btn btn-primary w-100"
-                                >
+                                    class="btn btn-primary w-100 mb-2">
 
-                                    <i class="fa-solid fa-user-check me-1"></i>
-
-                                    Tugaskan
+                                    <i class="fa-solid fa-user-check"></i>
+                                    Simpan Perubahan
 
                                 </button>
-
-                            </form>
-
-                        @endif
-
-
-                        <!-- SEDANG DITANGANI -->
-
-                        @if($laporan->status === 'sedang_ditangani')
-
-                            <div class="alert alert-info mt-2 mb-0 small">
-
-                                <i class="fa-solid fa-circle-info me-1"></i>
-
-                                Laporan sedang ditangani oleh petugas.
-
-                            </div>
-
-                        @endif
-
-
-                        <!-- VALIDASI AKHIR -->
-
-                        @if($laporan->status === 'menunggu_validasi_akhir')
-
-                            <form
-                                action="{{ route(
-                                    'admin.laporan.validasi-akhir',
-                                    $laporan->id
-                                ) }}"
-                                method="POST"
-                            >
-
-                                @csrf
-
-                                <div class="alert alert-warning small">
-
-                                    <strong>
-                                        Penanganan selesai.
-                                    </strong>
-
-                                    <br>
-
-                                    Periksa Foto Sebelum dan Foto Sesudah
-                                    sebelum melakukan validasi.
-
-                                </div>
 
 
                                 <button
-                                    type="submit"
-                                    class="btn btn-success w-100"
-                                >
+                                    type="button"
+                                    class="btn btn-outline-secondary w-100"
+                                    id="btnBatalEditPetugas">
 
-                                    <i class="fa-solid fa-check-double me-1"></i>
-
-                                    Validasi & Selesai
+                                    <i class="fa-solid fa-xmark me-1"></i>
+                                    Batal
 
                                 </button>
 
                             </form>
 
-                        @endif
+                        </div>
 
+                    @else
 
-                        <!-- SELESAI -->
+                        {{-- ================================================= --}}
+                        {{-- BELUM ADA PETUGAS -> FORM PENUGASAN LANGSUNG   --}}
+                        {{-- ================================================= --}}
 
-                        @if($laporan->status === 'selesai')
+                        <form
+                            action="{{ route('admin.laporan.tugaskan', $laporan->id) }}"
+                            method="POST">
 
-                            <div class="alert alert-success small mb-0">
+                            @csrf
 
-                                <i class="fa-solid fa-circle-check me-1"></i>
+                            <div class="mb-3">
 
-                                Laporan ini telah selesai divalidasi.
+                                <label class="form-label">
+                                    Tugaskan Petugas
+                                </label>
+
+                                <select
+                                    name="petugas_id"
+                                    class="form-select"
+                                    required>
+
+                                    <option value="">
+                                        -- Pilih Petugas --
+                                    </option>
+
+                                    @foreach($petugasList as $p)
+
+                                        <option
+                                            value="{{ $p->id }}"
+                                            {{ old('petugas_id') == $p->id ? 'selected' : '' }}>
+
+                                            {{ $p->user?->name ?? 'Petugas' }}
+
+                                            @if($p->penugasans_count > 0)
+                                                (Sedang menangani {{ $p->penugasans_count }} tugas)
+                                            @else
+                                                (Tersedia)
+                                            @endif
+
+                                        </option>
+
+                                    @endforeach
+
+                                </select>
 
                             </div>
 
-                        @endif
 
+                            <div class="mb-3">
 
-                        <!-- DITOLAK -->
+                                <label class="form-label">
+                                    Tenggat Waktu (Opsional)
+                                </label>
 
-                        @if($laporan->status === 'ditolak')
-
-                            <div class="alert alert-danger small mb-0">
-
-                                <strong>
-                                    Laporan ditolak.
-                                </strong>
-
-                                <br>
-
-                                {{
-                                    $laporan->alasan_penolakan
-                                    ?? 'Tidak ada alasan.'
-                                }}
+                                <input
+                                    type="datetime-local"
+                                    name="tenggat_waktu"
+                                    class="form-control"
+                                    value="{{ old('tenggat_waktu') }}">
 
                             </div>
 
-                        @endif
+
+                            <div class="mb-3">
+
+                                <label class="form-label">
+                                    Catatan Admin
+                                </label>
+
+                                <textarea
+                                    name="catatan_admin"
+                                    class="form-control"
+                                    rows="2">{{ old('catatan_admin') }}</textarea>
+
+                            </div>
+
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-100">
+
+                                <i class="fa-solid fa-user-check"></i>
+                                Tugaskan
+
+                            </button>
+
+                        </form>
+
+                    @endif
+
+                @endif
+
+
+                {{-- ================================================= --}}
+                {{-- 3. MENUNGGU VALIDASI AKHIR                      --}}
+                {{-- ================================================= --}}
+
+                @if($laporan->status === 'menunggu_validasi_akhir')
+
+                    <form
+                        action="{{ route('admin.laporan.validasi-akhir', $laporan->id) }}"
+                        method="POST">
+
+                        @csrf
+
+                        <div class="alert alert-warning">
+
+                            Laporan ini sudah ditangani. Silakan periksa
+                            foto dokumentasi. Jika sudah sesuai, klik
+                            tombol di bawah untuk menyelesaikan.
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-success w-100">
+
+                            <i class="fa-solid fa-check-double"></i>
+                            Validasi & Selesai
+
+                        </button>
+
+                    </form>
+
+                @endif
+
+
+                {{-- ================================================= --}}
+                {{-- 4. SEDANG DITANGANI                              --}}
+                {{-- ================================================= --}}
+
+                @if(in_array($laporan->status, ['sedang_ditangani']))
+
+                    <div class="alert alert-info">
+
+                        Laporan sedang ditangani oleh petugas.
+                        Menunggu konfirmasi penyelesaian.
 
                     </div>
 
-                </div>
+                @endif
 
 
-                <!-- KEMBALI -->
+                {{-- ================================================= --}}
+                {{-- 5. SELESAI                                        --}}
+                {{-- ================================================= --}}
 
-                <a
-                    href="{{ route('admin.laporan.index') }}"
-                    class="btn btn-outline-secondary w-100"
-                >
+                @if($laporan->status === 'selesai')
 
-                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    <div class="alert alert-success">
 
-                    Kembali ke Manajemen Laporan
+                        Laporan ini telah selesai divalidasi.
 
-                </a>
+                    </div>
+
+                @endif
+
+            </div>
+        </div>
+
+
+        <div class="card mb-4">
+
+            <div class="card-header bg-white">
+                <h5 class="m-0">Riwayat Status</h5>
+            </div>
+
+            <div class="card-body p-0">
+
+                <ul class="list-group list-group-flush">
+
+                    @foreach($laporan->laporanStatusHistories as $history)
+
+                        <li class="list-group-item p-3">
+
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+
+                                <strong>
+                                    {{ str_replace(
+                                        '_',
+                                        ' ',
+                                        strtoupper(
+                                            $history->status_baru
+                                            ?? $history->status_sesudah
+                                            ?? ''
+                                        )
+                                    ) }}
+                                </strong>
+
+                                <small class="text-muted">
+                                    {{ $history->created_at
+                                        ? $history->created_at->format('d M Y H:i')
+                                        : '-' }}
+                                </small>
+
+                            </div>
+
+                            <small class="d-block text-muted">
+                                {{ $history->keterangan }}
+                            </small>
+
+                            <small class="d-block text-muted mt-1">
+
+                                <i class="fa-solid fa-user"></i>
+
+                                {{ $history->user?->name ?? 'Sistem' }}
+
+                            </small>
+
+                        </li>
+
+                    @endforeach
+
+                </ul>
 
             </div>
 
         </div>
 
     </div>
+</div>
+```
 
 </div>
 
-
-<!-- ================= MODAL TOLAK ================= -->
-
-@if($laporan->status === 'menunggu_verifikasi')
+<!-- Modal Preview Gambar -->
 
 <div
     class="modal fade"
-    id="modalTolak"
+    id="modalPreviewImage"
     tabindex="-1"
->
+    aria-labelledby="modalPreviewImageLabel"
+    aria-hidden="true">
 
-    <div class="modal-dialog">
+```
+<div class="modal-dialog modal-dialog-centered modal-xl">
 
-        <form
-            action="{{ route(
-                'admin.laporan.tolak',
-                $laporan->id
-            ) }}"
-            method="POST"
-        >
+    <div class="modal-content bg-dark">
 
-            @csrf
+        <div class="modal-header border-0">
 
-            <div class="modal-content">
+            <h5
+                class="modal-title text-white"
+                id="modalPreviewImageLabel">
+                Preview Gambar
+            </h5>
 
-                <div class="modal-header">
+            <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Close">
+            </button>
 
-                    <h5 class="modal-title text-danger">
-                        Tolak Laporan
-                    </h5>
+        </div>
 
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                    ></button>
+        <div class="modal-body text-center p-2">
 
-                </div>
+            <img
+                id="previewImageLarge"
+                src=""
+                alt="Preview Gambar"
+                style="
+                    max-width: 100%;
+                    max-height: 80vh;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    border-radius: 8px;
+                ">
 
-
-                <div class="modal-body">
-
-                    <label class="form-label fw-bold">
-                        Alasan Penolakan
-                    </label>
-
-                    <textarea
-                        name="alasan_penolakan"
-                        class="form-control"
-                        rows="4"
-                        required
-                        maxlength="500"
-                        placeholder="Masukkan alasan penolakan..."
-                    ></textarea>
-
-                </div>
-
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                    >
-                        Batal
-                    </button>
-
-
-                    <button
-                        type="submit"
-                        class="btn btn-danger"
-                    >
-                        Tolak Laporan
-                    </button>
-
-                </div>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 
 </div>
-
-@endif
-
-
-<!-- ================= MODAL FOTO ================= -->
-
-<div
-    id="photoModal"
-    class="photo-modal"
-    onclick="tutupFoto()"
->
-
-    <span
-        class="photo-modal-close"
-        onclick="tutupFoto()"
-    >
-        &times;
-    </span>
-
-    <img
-        id="photoModalImage"
-        src=""
-        alt="Preview Foto"
-        onclick="event.stopPropagation()"
-    >
+```
 
 </div>
 
-
-<!-- ================= LEAFLET ================= -->
+<!-- Leaflet JS -->
 
 <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    crossorigin=""
-></script>
-
+    crossorigin="">
+</script>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+        /*
+        |--------------------------------------------------------------------------
+        | MAP
+        |--------------------------------------------------------------------------
+        */
 
-        /* ================= FOTO ================= */
+        var lat = {{ $laporan->latitude ?? -7.6531 }};
+        var lng = {{ $laporan->longitude ?? 111.3284 }};
 
-        window.bukaFoto = function(url) {
+        var map = L.map('mapDetailAdmin').setView([lat, lng], 15);
 
-            document
-                .getElementById('photoModalImage')
-                .src = url;
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }
+        ).addTo(map);
 
-            document
-                .getElementById('photoModal')
-                .style.display = 'flex';
-
-        };
-
-
-        window.tutupFoto = function() {
-
-            document
-                .getElementById('photoModal')
-                .style.display = 'none';
-
-            document
-                .getElementById('photoModalImage')
-                .src = '';
-
-        };
-
-
-        /* ================= PETA ================= */
-
-        const mapElement =
-            document.getElementById('mapDetailAdmin');
-
-
-        if (mapElement) {
-
-            const latitude =
-                {{ $laporan->latitude ?? -7.6531 }};
-
-            const longitude =
-                {{ $laporan->longitude ?? 111.3284 }};
-
-
-            const map =
-                L.map('mapDetailAdmin')
-                    .setView(
-                        [latitude, longitude],
-                        15
-                    );
-
-
-            L.tileLayer(
-                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                {
-                    maxZoom: 19,
-                    attribution: '&copy; OpenStreetMap contributors'
-                }
-            ).addTo(map);
-
-
-            L.marker(
-                [latitude, longitude]
-            )
+        L.marker([lat, lng])
             .addTo(map)
             .bindPopup(
-                `<b>Lokasi Laporan</b><br>{{ $laporan->alamat_lengkap ?? '-' }}`
+                "<b>Lokasi Laporan</b><br>{{ $laporan->alamat_lengkap }}"
             )
             .openPopup();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | PREVIEW GAMBAR
+        |--------------------------------------------------------------------------
+        */
+
+        const previewImages = document.querySelectorAll('.laporan-image-preview');
+        const previewImageLarge = document.getElementById('previewImageLarge');
+
+        previewImages.forEach(function(image) {
+
+            image.addEventListener('click', function() {
+
+                const imageUrl = this.getAttribute('data-image');
+
+                previewImageLarge.src = imageUrl;
+
+            });
+
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESET GAMBAR SAAT MODAL DITUTUP
+        |--------------------------------------------------------------------------
+        */
+
+        const modalPreviewImage = document.getElementById('modalPreviewImage');
+
+        if (modalPreviewImage) {
+
+            modalPreviewImage.addEventListener('hidden.bs.modal', function() {
+
+                previewImageLarge.src = '';
+
+            });
+
         }
 
-    }
-);
 
+        /*
+        |--------------------------------------------------------------------------
+        | EDIT PETUGAS
+        |--------------------------------------------------------------------------
+        */
+
+        const btnEditPetugas = document.getElementById('btnEditPetugas');
+        const btnBatalEditPetugas = document.getElementById('btnBatalEditPetugas');
+
+        const petugasTerpilih = document.getElementById('petugasTerpilih');
+        const formEditPetugas = document.getElementById('formEditPetugas');
+
+
+        if (btnEditPetugas && petugasTerpilih && formEditPetugas) {
+
+            btnEditPetugas.addEventListener('click', function() {
+
+                petugasTerpilih.style.display = 'none';
+                formEditPetugas.style.display = 'block';
+
+            });
+
+        }
+
+
+        if (btnBatalEditPetugas && petugasTerpilih && formEditPetugas) {
+
+            btnBatalEditPetugas.addEventListener('click', function() {
+
+                formEditPetugas.style.display = 'none';
+                petugasTerpilih.style.display = 'block';
+
+            });
+
+        }
+
+    });
 </script>
 
 @endsection
